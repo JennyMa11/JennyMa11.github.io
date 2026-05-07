@@ -1,0 +1,23 @@
+---
+import { getEntry } from "astro:content";
+import Container from "@/components/Container.astro";
+import PageHeader from "@/components/PageHeader.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+const page = await getEntry("pages", "about");
+
+if (!page) {
+  throw new Error("Missing src/content/pages/about.mdx");
+}
+
+const { Content } = await page.render();
+---
+
+<BaseLayout title="About" description={page.data.description}>
+  <PageHeader eyebrow="About" title={page.data.title} description={page.data.description} />
+  <Container as="section" prose class="pb-16">
+    <div class="content">
+      <Content />
+    </div>
+  </Container>
+</BaseLayout>

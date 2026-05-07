@@ -1,0 +1,36 @@
+---
+import Container from "@/components/Container.astro";
+import PageHeader from "@/components/PageHeader.astro";
+import PostCard from "@/components/PostCard.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getAllTags, getPublishedPosts, slugifyTag } from "@/lib/content";
+
+export async function getStaticPaths() {
+  const posts = await getPublishedPosts();
+  const tags = getAllTags(posts);
+
+  return tags.map(({ tag }) => ({
+    params: { tag: slugifyTag(tag) },
+    props: {
+      tag,
+      posts: posts.filter((post) => post.data.tags.includes(tag))
+    }
+  }));
+}
+
+const { tag, posts } = Astro.props;
+---
+
+<BaseLayout title={`Tag: ${tag}`} description={`Posts tagged ${tag}.`}>
+  <PageHeader
+    eyebrow="Tag"
+    title={tag}
+    description={`${posts.length} published ${posts.length === 1 ? "post" : "posts"} in this topic.`}
+  />
+
+  <Container as="section" class="pb-16">
+    <div class="rounded-lg border-y border-border bg-surface/35 px-1">
+      {posts.map((post) => <PostCard post={post} />)}
+    </div>
+  </Container>
+</BaseLayout>

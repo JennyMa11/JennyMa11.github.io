@@ -1,0 +1,28 @@
+---
+import { getEntry } from "astro:content";
+import Container from "@/components/Container.astro";
+import PageHeader from "@/components/PageHeader.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { formatDate } from "@/lib/content";
+
+const page = await getEntry("pages", "now");
+
+if (!page) {
+  throw new Error("Missing src/content/pages/now.mdx");
+}
+
+const { Content } = await page.render();
+---
+
+<BaseLayout title="Now" description={page.data.description}>
+  <PageHeader
+    eyebrow={page.data.updatedDate ? `Updated ${formatDate(page.data.updatedDate)}` : "Now"}
+    title={page.data.title}
+    description={page.data.description}
+  />
+  <Container as="section" prose class="pb-16">
+    <div class="content">
+      <Content />
+    </div>
+  </Container>
+</BaseLayout>

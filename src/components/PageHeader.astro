@@ -1,0 +1,25 @@
+---
+import Container from "@/components/Container.astro";
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  description?: string;
+}
+
+const { eyebrow, title, description } = Astro.props;
+---
+
+<Container as="section" class="pb-10 pt-14 sm:pb-14 sm:pt-20">
+  {eyebrow && <p class="section-kicker mb-3 text-accent">{eyebrow}</p>}
+  <h1 class="max-w-3xl text-4xl font-semibold tracking-normal text-text sm:text-5xl">
+    {title}
+  </h1>
+  {
+    description && (
+      <p class="mt-5 max-w-2xl text-lg leading-8 text-text-muted">
+        {description}
+      </p>
+    )
+  }
+</Container>

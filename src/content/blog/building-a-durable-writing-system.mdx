@@ -1,0 +1,34 @@
+---
+title: "Building a Durable Writing System"
+description: "A lightweight approach for keeping technical notes useful after the first week."
+pubDate: 2026-05-01
+updatedDate: 2026-05-06
+tags: ["Writing", "Systems", "Productivity"]
+draft: false
+featured: true
+heroImage: "/og.svg"
+---
+
+Good writing systems do not need many moving parts. They need clear entry points, stable review habits, and a low-friction path from rough notes to published work.
+
+## Capture
+
+Capture should be fast enough that it does not become a separate task. I keep short notes close to the work: experiment logs near code, product observations near screenshots, and article fragments near the outline.
+
+The important distinction is between *capture* and *commitment*. A captured idea is allowed to be incomplete. A committed note has a title, a purpose, and a likely audience.
+
+## Shape
+
+Every durable note gets three passes:
+
+1. What problem is this note actually solving?
+2. What would a reader need to know before the conclusion makes sense?
+3. What should be removed because it only preserves my thinking history?
+
+That last question is the highest-leverage edit. Published writing should preserve the argument, not every step that produced it.
+
+## Publish
+
+Publishing regularly is easier when the site has a narrow surface area. This blog keeps posts in MDX, projects in content collections, and deployment in GitHub Actions. There is no database and no runtime service to maintain.
+
+The result is intentionally boring infrastructure: static files, versioned content, and a repeatable build.

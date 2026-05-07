@@ -1,0 +1,19 @@
+---
+import { slugifyTag } from "@/lib/content";
+
+interface Props {
+  tag: string;
+  href?: string;
+  count?: number;
+}
+
+const { tag, href = `/tags/${slugifyTag(tag)}/`, count } = Astro.props;
+---
+
+<a
+  href={href}
+  class="focus-ring inline-flex min-h-9 items-center gap-2 rounded-md border border-border bg-surface px-2.5 py-1 text-sm text-text-muted no-underline transition duration-200 hover:border-border-strong hover:bg-surface-muted hover:text-text"
+>
+  <span>{tag}</span>
+  {typeof count === "number" && <span class="text-text-subtle">{count}</span>}
+</a>

@@ -1,0 +1,46 @@
+---
+import TagPill from "@/components/TagPill.astro";
+import { formatDate, type Project } from "@/lib/content";
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+---
+
+<article id={project.slug} class="surface-card-interactive scroll-mt-24 p-5">
+  <div class="flex h-full flex-col gap-4">
+    <div>
+      <div class="mb-3 flex flex-wrap items-center gap-2 text-sm text-text-subtle">
+        <time datetime={project.data.pubDate.toISOString()}>{formatDate(project.data.pubDate)}</time>
+        <span class="rounded-md bg-accent-soft px-2 py-0.5 text-xs font-medium capitalize text-accent">
+          {project.data.status}
+        </span>
+      </div>
+      <h2 class="text-xl font-semibold tracking-normal text-text">{project.data.title}</h2>
+      <p class="mt-3 leading-7 text-text-muted">{project.data.description}</p>
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+      {project.data.stack.map((tag) => <TagPill tag={tag} href={`/projects/#${project.slug}`} />)}
+    </div>
+
+    <div class="mt-auto flex flex-wrap gap-3 pt-2 text-sm">
+      {
+        project.data.url && (
+          <a class="text-link focus-ring rounded-sm" href={project.data.url}>
+            Visit
+          </a>
+        )
+      }
+      {
+        project.data.repository && (
+          <a class="text-link focus-ring rounded-sm" href={project.data.repository}>
+            Source
+          </a>
+        )
+      }
+    </div>
+  </div>
+</article>

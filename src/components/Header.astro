@@ -1,0 +1,69 @@
+---
+import ThemeToggle from "@/components/ThemeToggle.astro";
+import { site } from "@/lib/site";
+
+const pathname = Astro.url.pathname;
+
+const isActive = (href: string) => {
+  if (href === "/") return pathname === "/";
+  return pathname.startsWith(href);
+};
+---
+
+<header class="sticky top-0 z-40 border-b border-border/80 bg-canvas/82 backdrop-blur-xl">
+  <div class="container-page flex min-h-16 items-center justify-between gap-4">
+    <a href="/" class="focus-ring group inline-flex items-center gap-3 rounded-sm text-sm font-semibold tracking-normal text-text no-underline">
+      <span class="grid size-7 place-items-center rounded-md bg-text text-[11px] font-bold text-canvas shadow-sm">JM</span>
+      <span>{site.name}</span>
+    </a>
+
+    <nav class="hidden items-center gap-1 md:flex" aria-label="Primary navigation">
+      {
+        site.nav.map((item) => (
+          <a
+            href={item.href}
+            aria-current={isActive(item.href) ? "page" : undefined}
+            class:list={[
+              "focus-ring rounded-md px-3 py-2 text-sm no-underline transition duration-200",
+              isActive(item.href)
+                ? "bg-surface-muted text-text"
+                : "text-text-muted hover:bg-surface-muted hover:text-text"
+            ]}
+          >
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="flex items-center gap-2">
+      <ThemeToggle />
+
+      <details class="relative md:hidden">
+        <summary class="focus-ring grid size-11 cursor-pointer list-none place-items-center rounded-md border border-border bg-surface-raised text-text-muted shadow-sm transition hover:border-border-strong hover:text-text" aria-label="Open menu">
+          <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M4 7h16M4 12h16M4 17h16"/>
+          </svg>
+        </summary>
+        <nav class="absolute right-0 mt-2 w-48 rounded-lg border border-border bg-surface-raised p-1.5 shadow-lift" aria-label="Mobile navigation">
+          {
+            site.nav.map((item) => (
+              <a
+                href={item.href}
+                aria-current={isActive(item.href) ? "page" : undefined}
+                class:list={[
+                  "focus-ring block min-h-11 rounded-md px-3 py-3 text-sm no-underline",
+                  isActive(item.href)
+                    ? "bg-surface-muted text-text"
+                    : "text-text-muted hover:bg-surface-muted hover:text-text"
+                ]}
+              >
+                {item.label}
+              </a>
+            ))
+          }
+        </nav>
+      </details>
+    </div>
+  </div>
+</header>

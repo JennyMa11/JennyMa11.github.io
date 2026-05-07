@@ -1,0 +1,26 @@
+---
+title: "Notes on Machine Learning Experiment Logs"
+description: "A compact structure for making experiments easier to compare later."
+pubDate: 2026-03-29
+updatedDate: 2026-04-02
+tags: ["Machine Learning", "Research", "Systems"]
+draft: false
+featured: false
+heroImage: "/og.svg"
+---
+
+Experiment logs are most useful when they make comparison cheap. The goal is not to record everything. The goal is to preserve the decisions that explain a result.
+
+## Minimum useful fields
+
+Each run should record the hypothesis, dataset version, configuration, metric target, and a short interpretation. The interpretation matters because metrics alone rarely explain what changed.
+
+## Compare by question
+
+Instead of organizing experiments only by date, group them by the question they answer:
+
+- Does the new feature improve validation performance?
+- Does the simpler model train faster without losing accuracy?
+- Does the policy remain stable under a harder workload?
+
+This keeps the log aligned with the research process rather than the file system.

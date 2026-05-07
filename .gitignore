@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.astro/
+.npm-cache/
+.vercel/
+.env
+.env.*
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+dev-server*.log
+preview-server*.log

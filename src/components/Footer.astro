@@ -1,0 +1,19 @@
+---
+import Container from "@/components/Container.astro";
+import { site } from "@/lib/site";
+
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-border bg-surface/45">
+  <Container class="flex flex-col gap-5 py-10 text-sm text-text-subtle sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <p class="font-medium text-text">© {year} {site.name}</p>
+      <p class="mt-1">Static writing system built with Astro and GitHub Pages.</p>
+    </div>
+    <div class="flex items-center gap-4">
+      <a class="text-link focus-ring rounded-sm" href="/rss.xml">RSS</a>
+      <a class="text-link focus-ring rounded-sm" href="https://github.com/JennyMa11">GitHub</a>
+    </div>
+  </Container>
+</footer>

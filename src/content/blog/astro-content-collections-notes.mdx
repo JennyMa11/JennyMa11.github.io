@@ -1,0 +1,37 @@
+---
+title: "Astro Content Collections as a Personal CMS"
+description: "Why typed frontmatter is enough for a focused personal publishing workflow."
+pubDate: 2026-04-18
+updatedDate: 2026-04-20
+tags: ["Astro", "MDX", "Content"]
+draft: false
+featured: true
+heroImage: "/og.svg"
+---
+
+Astro Content Collections are a practical middle ground between loose Markdown files and a full CMS. They keep the writing workflow file-based while giving the application typed metadata.
+
+## Why collections help
+
+Frontmatter starts small, then grows. A post may need a title and date at first, then tags, draft state, featured state, Open Graph images, and update timestamps.
+
+Without a schema, mistakes become runtime surprises. With a schema, missing metadata is caught during development or build.
+
+## A useful shape
+
+For this site, the core post fields are:
+
+- `title`
+- `description`
+- `pubDate`
+- `updatedDate`
+- `tags`
+- `draft`
+- `featured`
+- `heroImage`
+
+Those fields are enough for listing pages, RSS, SEO, archive grouping, tag pages, and article navigation.
+
+## Keep it static
+
+The site should not need a database to publish essays. Git is already a good content history. Static output also keeps GitHub Pages deployment simple and cheap to maintain.

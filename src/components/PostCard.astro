@@ -1,0 +1,31 @@
+---
+import TagPill from "@/components/TagPill.astro";
+import { formatDate, getReadingTime, type BlogPost } from "@/lib/content";
+
+interface Props {
+  post: BlogPost;
+}
+
+const { post } = Astro.props;
+const readingTime = getReadingTime(post.body);
+---
+
+<article class="group border-b border-border py-7 last:border-b-0">
+  <div class="flex flex-col gap-3">
+    <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-text-subtle">
+      <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+      <span aria-hidden="true">/</span>
+      <span>{readingTime}</span>
+      {post.data.featured && <span class="font-medium text-accent">Featured</span>}
+    </div>
+    <h2 class="text-2xl font-semibold tracking-normal text-text">
+      <a href={`/blog/${post.slug}/`} class="focus-ring rounded-sm no-underline decoration-border-strong group-hover:text-accent group-hover:underline">
+        {post.data.title}
+      </a>
+    </h2>
+    <p class="max-w-2xl leading-7 text-text-muted">{post.data.description}</p>
+    <div class="flex flex-wrap gap-2 pt-1">
+      {post.data.tags.map((tag) => <TagPill tag={tag} />)}
+    </div>
+  </div>
+</article>

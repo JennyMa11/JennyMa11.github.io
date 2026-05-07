@@ -1,0 +1,13 @@
+---
+interface Props {
+  as?: keyof HTMLElementTagNameMap;
+  prose?: boolean;
+  class?: string;
+}
+
+const { as: Element = "div", prose = false, class: className = "" } = Astro.props;
+---
+
+<Element class:list={[prose ? "container-prose" : "container-page", className]}>
+  <slot />
+</Element>

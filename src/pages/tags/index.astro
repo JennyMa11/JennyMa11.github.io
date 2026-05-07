@@ -1,0 +1,26 @@
+---
+import Container from "@/components/Container.astro";
+import PageHeader from "@/components/PageHeader.astro";
+import TagPill from "@/components/TagPill.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getAllTags, getPublishedPosts } from "@/lib/content";
+
+const posts = await getPublishedPosts();
+const tags = getAllTags(posts);
+---
+
+<BaseLayout title="Tags" description="Browse posts by topic.">
+  <PageHeader
+    eyebrow="Tags"
+    title="Topics across the archive."
+    description="Use tags to follow recurring themes and research areas."
+  />
+
+  <Container as="section" class="pb-16">
+    <div class="surface-card p-5">
+      <div class="flex flex-wrap gap-3">
+      {tags.map(({ tag, total }) => <TagPill tag={tag} count={total} />)}
+      </div>
+    </div>
+  </Container>
+</BaseLayout>

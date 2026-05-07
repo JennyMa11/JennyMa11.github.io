@@ -1,0 +1,42 @@
+---
+import Container from "@/components/Container.astro";
+import PageHeader from "@/components/PageHeader.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { formatDate, getPublishedPosts, groupPostsByYear } from "@/lib/content";
+
+const posts = await getPublishedPosts();
+const groups = groupPostsByYear(posts);
+const years = Object.keys(groups).sort((a, b) => Number(b) - Number(a));
+---
+
+<BaseLayout title="Archive" description="A chronological archive of all published writing.">
+  <PageHeader
+    eyebrow="Archive"
+    title="All published writing."
+    description="A compact chronological view for scanning older posts."
+  />
+
+  <Container as="section" class="pb-16">
+    <div class="space-y-10">
+      {
+        years.map((year) => (
+          <section>
+            <h2 class="mb-4 text-2xl font-semibold tracking-normal text-text">{year}</h2>
+            <div class="divide-y divide-border rounded-lg border-y border-border bg-surface/35 px-1">
+              {groups[year].map((post) => (
+                <a href={`/blog/${post.slug}/`} class="focus-ring grid gap-2 rounded-md px-3 py-4 no-underline transition hover:bg-surface-muted sm:grid-cols-[120px_1fr]">
+                  <time class="text-sm text-text-subtle" datetime={post.data.pubDate.toISOString()}>
+                    {formatDate(post.data.pubDate)}
+                  </time>
+                  <span class="font-medium text-text hover:text-accent">
+                    {post.data.title}
+                  </span>
+                </a>
+              ))}
+            </div>
+          </section>
+        ))
+      }
+    </div>
+  </Container>
+</BaseLayout>
