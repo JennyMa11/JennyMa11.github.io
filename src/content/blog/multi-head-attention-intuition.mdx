@@ -1,0 +1,193 @@
+---
+title: "多头注意力机制的直觉理解"
+description: "从直觉到实现，理解为什么 Transformer 需要多个注意力头，以及它们各自在学习什么。"
+pubDate: 2026-05-12
+tags: ["Transformer", "注意力机制", "深度学习"]
+draft: false
+featured: false
+---
+
+多头注意力是 Transformer 的核心组件。但为什么要用多个头？每个头在学什么？
+
+## 单头注意力的局限
+
+单个注意力头只能学习一种关系模式：
+
+```
+"The cat sat on the mat"
+```
+
+这个句子有多种关系：
+- 语法关系：cat 是 sat 的主语
+- 语义关系：cat 和 mat 都是动物/物体
+- 位置关系：sat 在 cat 之后
+
+一个头很难同时捕捉所有这些关系。
+
+## 多头注意力的直觉
+
+想象你在阅读一个句子，你会同时关注：
+
+1. **语法头**：谁对谁做了什么？
+2. **语义头**：哪些词意思相近？
+3. **位置头**：哪些词靠得近？
+4. **指代头**：代词指代谁？
+
+```python
+# 多头注意力的伪代码
+def multi_head_attention(Q, K, V, n_heads=8):
+    d_k = Q.shape[-1] // n_heads
+    
+    # 分割成多个头
+    heads = []
+    for i in range(n_heads):
+        q_i = Q[:, :, i*d_k:(i+1)*d_k]
+        k_i = K[:, :, i*d_k:(i+1)*d_k]
+        v_i = V[:, :, i*d_k:(i+1)*d_k]
+        
+        # 每个头独立计算注意力
+        head_i = scaled_dot_product_attention(q_i, k_i, v_i)
+        heads.append(head_i)
+    
+    # 拼接所有头
+    return torch.cat(heads, dim=-1)
+```
+
+## 注意力头在学什么？
+
+研究发现，不同层的注意力头确实学到了不同的模式：
+
+### 底层（靠近输入）
+
+- **位置模式**：关注相邻的词
+- **形态学**：词缀、词根关系
+
+### 中层
+
+- **语法关系**：主谓宾、修饰关系
+- **短距离依赖**：介词短语、从句
+
+### 高层（靠近输出）
+
+- **语义关系**：同义词、反义词
+- **长距离依赖**：指代消解、篇章结构
+
+## 可视化注意力
+
+```python
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+def visualize_attention(tokens, attention_weights, head_idx):
+    """可视化某个头的注意力权重"""
+    fig, ax = plt.subplots(figsize=(10, 10))
+    sns.heatmap(
+        attention_weights[head_idx],
+        xticklabels=tokens,
+        yticklabels=tokens,
+        ax=ax,
+        cmap='Blues'
+    )
+    ax.set_title(f'Head {head_idx} Attention')
+    plt.show()
+```
+
+## 为什么是 8 个头？
+
+原始 Transformer 使用 8 个头，d_model = 512，所以每个头的维度是 64。
+
+**经验法则**：
+- 头数太少：表达能力不足
+- 头数太多：计算开销大，可能过拟合
+
+**现代选择**：
+- GPT-3：96 头
+- BERT-large：16 头
+- LLaMA-7B：32 头
+
+## 注意力头的冗余
+
+研究发现，很多注意力头是冗余的：
+
+```
+论文: "Are Sixteen Heads Really Better than One?"
+发现: 删除大部分头后，性能下降很小
+```
+
+这说明：
+1. 不是所有头都同等重要
+2. 可以进行头剪枝来压缩模型
+3. 某些头可能是"备份"
+
+## 代码实现
+
+```python
+import torch
+import torch.nn as nn
+import math
+
+class MultiHeadAttention(nn.Module):
+    def __init__(self, d_model=512, n_heads=8):
+        super().__init__()
+        self.d_model = d_model
+        self.n_heads = n_heads
+        self.d_k = d_model // n_heads
+        
+        self.W_q = nn.Linear(d_model, d_model)
+        self.W_k = nn.Linear(d_model, d_model)
+        self.W_v = nn.Linear(d_model, d_model)
+        self.W_o = nn.Linear(d_model, d_model)
+    
+    def forward(self, Q, K, V, mask=None):
+        batch_size = Q.size(0)
+        
+        # 线性变换
+        Q = self.W_q(Q).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)
+        K = self.W_k(K).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)
+        V = self.W_v(V).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)
+        
+        # 计算注意力
+        scores = torch.matmul(Q, K.transpose(-2, -1)) / math.sqrt(self.d_k)
+        
+        if mask is not None:
+            scores = scores.masked_fill(mask == 0, -1e9)
+        
+        attention = torch.softmax(scores, dim=-1)
+        output = torch.matmul(attention, V)
+        
+        # 拼接所有头
+        output = output.transpose(1, 2).contiguous().view(batch_size, -1, self.d_model)
+        
+        return self.W_o(output), attention
+```
+
+## 实验：观察注意力头
+
+```python
+# 使用 BERT 可视化注意力
+from transformers import BertModel, BertTokenizer
+
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+model = BertModel.from_pretrained('bert-base-uncased', output_attentions=True)
+
+inputs = tokenizer("The cat sat on the mat", return_tensors="pt")
+outputs = model(**inputs)
+
+# outputs.attentions: (n_layers, batch, n_heads, seq_len, seq_len)
+for layer_idx, layer_attention in enumerate(outputs.attentions):
+    print(f"Layer {layer_idx}:")
+    for head_idx in range(layer_attention.size(1)):
+        # 找到每个头最关注的词对
+        max_attention = layer_attention[0, head_idx].max()
+        print(f"  Head {head_idx}: max attention = {max_attention:.3f}")
+```
+
+## 总结
+
+多头注意力让 Transformer 能够同时学习多种关系模式。每个头专注于不同的方面，共同构成丰富的表示。理解这一点，有助于理解为什么 Transformer 如此强大，以及如何设计更好的模型。
+
+---
+
+**延伸阅读**：
+- [Attention is All You Need](https://arxiv.org/abs/1706.03762)
+- [BertViz: 注意力可视化工具](https://github.com/jessevig/bertviz)
