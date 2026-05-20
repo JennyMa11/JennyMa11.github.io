@@ -12,8 +12,8 @@ const { tag, href = `/tags/${slugifyTag(tag)}/`, count } = Astro.props;
 
 <a
   href={href}
-  class="focus-ring inline-flex min-h-9 items-center gap-2 rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-text-muted no-underline transition-all duration-200 hover:border-accent/30 hover:bg-accent-soft hover:text-accent"
+  class="focus-ring inline-flex min-h-9 items-center gap-2 rounded-lg border border-border bg-surface-muted/50 px-3 py-1.5 text-sm text-text-muted no-underline transition-all duration-200 hover:border-border-strong hover:text-text"
 >
   <span>{tag}</span>
-  {typeof count === "number" && <span class="rounded-full bg-surface-muted px-1.5 py-0.5 text-xs text-text-subtle">{count}</span>}
+  {typeof count === "number" && <span class="text-text-subtle text-xs">{count}</span>}
 </a>

@@ -3,10 +3,10 @@
 
 <button
   id="theme-toggle"
-  class="focus-ring grid size-11 place-items-center rounded-lg border border-border bg-surface-raised text-text-muted shadow-sm transition-all duration-200 hover:border-border-strong hover:text-text hover:shadow-md"
+  class="focus-ring grid size-11 place-items-center rounded-lg border border-border bg-surface text-text-muted transition-all duration-200 hover:border-border-strong hover:text-text"
   type="button"
-  aria-label="Toggle dark mode"
-  title="Toggle dark mode"
+  aria-label="切换深色模式"
+  title="切换深色模式"
 >
   <svg class="hidden size-4 dark:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
     <path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.36-6.36-1.41 1.41M7.05 16.95l-1.41 1.41m12.72 0-1.41-1.41M7.05 7.05 5.64 5.64"/>
@@ -19,12 +19,8 @@
 
 <script>
   const button = document.querySelector<HTMLButtonElement>("#theme-toggle");
-
   button?.addEventListener("click", () => {
-    const nextTheme = document.documentElement.classList.contains("dark")
-      ? "light"
-      : "dark";
-
+    const nextTheme = document.documentElement.classList.contains("dark") ? "light" : "dark";
     localStorage.setItem("theme", nextTheme);
     document.documentElement.classList.toggle("dark", nextTheme === "dark");
   });

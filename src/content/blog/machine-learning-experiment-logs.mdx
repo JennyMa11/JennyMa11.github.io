@@ -1,26 +1,26 @@
 ---
-title: "Notes on Machine Learning Experiment Logs"
-description: "A compact structure for making experiments easier to compare later."
+title: "机器学习实验日志笔记"
+description: "一种紧凑的结构，使实验更容易在以后比较。"
 pubDate: 2026-03-29
-updatedDate: 2026-04-02
-tags: ["Machine Learning", "Research", "Systems"]
+updatedDate: 2026-05-20
+tags: ["机器学习", "研究", "系统"]
 draft: false
 featured: false
 heroImage: "/og.svg"
 ---
 
-Experiment logs are most useful when they make comparison cheap. The goal is not to record everything. The goal is to preserve the decisions that explain a result.
+实验日志在使比较成本低廉时最有用。目标不是记录一切。目标是保留解释结果的决策。
 
-## Minimum useful fields
+## 最小有用字段
 
-Each run should record the hypothesis, dataset version, configuration, metric target, and a short interpretation. The interpretation matters because metrics alone rarely explain what changed.
+每次运行应该记录假设、数据集版本、配置、指标目标和简短的解释。解释很重要，因为指标本身很少能解释什么发生了变化。
 
-## Compare by question
+## 按问题比较
 
-Instead of organizing experiments only by date, group them by the question they answer:
+不要只按日期组织实验，而是按它们回答的问题分组：
 
-- Does the new feature improve validation performance?
-- Does the simpler model train faster without losing accuracy?
-- Does the policy remain stable under a harder workload?
+- 新功能是否提高了验证性能？
+- 更简单的模型是否在不损失准确性的情况下训练更快？
+- 策略在更困难的工作负载下是否保持稳定？
 
-This keeps the log aligned with the research process rather than the file system.
+这使日志与研究过程保持一致，而不是与文件系统保持一致。

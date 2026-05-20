@@ -10,21 +10,16 @@ interface Props {
 const { eyebrow, title, description } = Astro.props;
 ---
 
-<Container as="section" class="relative pb-10 pt-14 sm:pb-14 sm:pt-20">
-  <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-    <div class="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-accent/5 blur-3xl"></div>
-  </div>
-  <div class="relative">
-    {eyebrow && <p class="section-kicker mb-3 text-accent">{eyebrow}</p>}
-    <h1 class="font-display max-w-3xl text-4xl font-bold tracking-tight text-text sm:text-5xl">
-      {title}
-    </h1>
-    {
-      description && (
-        <p class="mt-5 max-w-2xl text-lg leading-8 text-text-muted">
-          {description}
-        </p>
-      )
-    }
-  </div>
+<Container as="section" class="pb-12 pt-16 sm:pb-16 sm:pt-24">
+  {eyebrow && <p class="section-kicker mb-4 text-accent">{eyebrow}</p>}
+  <h1 class="max-w-3xl text-4xl font-medium tracking-tight text-text sm:text-5xl" style="font-family: 'Playfair Display', 'Noto Serif SC', Georgia, serif;">
+    {title}
+  </h1>
+  {
+    description && (
+      <p class="mt-6 max-w-2xl text-lg leading-8 text-text-muted">
+        {description}
+      </p>
+    )
+  }
 </Container>

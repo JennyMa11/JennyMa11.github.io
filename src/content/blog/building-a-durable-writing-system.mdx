@@ -1,34 +1,34 @@
 ---
-title: "Building a Durable Writing System"
-description: "A lightweight approach for keeping technical notes useful after the first week."
+title: "构建持久的写作系统"
+description: "一种轻量级的方法，让技术笔记在第一周之后仍然有用。"
 pubDate: 2026-05-01
-updatedDate: 2026-05-06
-tags: ["Writing", "Systems", "Productivity"]
+updatedDate: 2026-05-20
+tags: ["写作", "系统", "效率"]
 draft: false
 featured: true
 heroImage: "/og.svg"
 ---
 
-Good writing systems do not need many moving parts. They need clear entry points, stable review habits, and a low-friction path from rough notes to published work.
+好的写作系统不需要太多活动部件。它们需要清晰的入口、稳定的审查习惯，以及从粗糙笔记到发布作品的低摩擦路径。
 
-## Capture
+## 捕获
 
-Capture should be fast enough that it does not become a separate task. I keep short notes close to the work: experiment logs near code, product observations near screenshots, and article fragments near the outline.
+捕获应该足够快，以至于不会成为一项单独的任务。我将简短笔记保持在工作附近：实验日志靠近代码，产品观察靠近截图，文章片段靠近大纲。
 
-The important distinction is between *capture* and *commitment*. A captured idea is allowed to be incomplete. A committed note has a title, a purpose, and a likely audience.
+重要的区别在于*捕获*和*承诺*之间。一个被捕获的想法允许不完整。一个被承诺的笔记有标题、目的和可能的读者。
 
-## Shape
+## 塑形
 
-Every durable note gets three passes:
+每个持久的笔记都会经过三遍打磨：
 
-1. What problem is this note actually solving?
-2. What would a reader need to know before the conclusion makes sense?
-3. What should be removed because it only preserves my thinking history?
+1. 这个笔记实际上在解决什么问题？
+2. 在结论有意义之前，读者需要知道什么？
+3. 应该删除什么，因为它只保留了我的思考历史？
 
-That last question is the highest-leverage edit. Published writing should preserve the argument, not every step that produced it.
+最后一个问题是最有杠杆效应的编辑。发布的写作应该保留论证，而不是产生它的每一步。
 
-## Publish
+## 发布
 
-Publishing regularly is easier when the site has a narrow surface area. This blog keeps posts in MDX, projects in content collections, and deployment in GitHub Actions. There is no database and no runtime service to maintain.
+当网站的表面区域较窄时，定期发布会更容易。这个博客将文章保存在 MDX 中，项目保存在内容集合中，部署在 GitHub Actions 中。没有数据库，也没有需要维护的运行时服务。
 
-The result is intentionally boring infrastructure: static files, versioned content, and a repeatable build.
+结果是有意为之的无聊基础设施：静态文件、版本化内容和可重复的构建。

@@ -13,9 +13,9 @@ if (!page) {
 const { Content } = await page.render();
 ---
 
-<BaseLayout title="About" description={page.data.description}>
-  <PageHeader eyebrow="About" title={page.data.title} description={page.data.description} />
-  <Container as="section" prose class="pb-16">
+<BaseLayout title="关于" description={page.data.description}>
+  <PageHeader eyebrow="关于" title={page.data.title} description={page.data.description} />
+  <Container as="section" prose class="pb-20">
     <div class="content">
       <Content />
     </div>

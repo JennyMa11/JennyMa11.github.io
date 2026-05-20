@@ -8,15 +8,15 @@ import { getProjects } from "@/lib/content";
 const projects = await getProjects();
 ---
 
-<BaseLayout title="Projects" description="Selected projects and experiments.">
+<BaseLayout title="项目" description="精选项目与实验。">
   <PageHeader
-    eyebrow="Projects"
-    title="Selected projects."
-    description="A curated view of active work, experiments, and useful repositories."
+    eyebrow="项目"
+    title="精选项目。"
+    description="活跃工作、实验和实用仓库的策划视图。"
   />
 
-  <Container as="section" class="pb-16">
-    <div class="grid gap-4 md:grid-cols-2">
+  <Container as="section" class="pb-20">
+    <div class="grid gap-5 md:grid-cols-2">
       {projects.map((project) => <ProjectCard project={project} />)}
     </div>
   </Container>

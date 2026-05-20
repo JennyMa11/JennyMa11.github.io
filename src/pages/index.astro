@@ -18,131 +18,107 @@ const latestPost = posts[0];
 ---
 
 <BaseLayout title={site.title} description={site.description}>
-  <!-- Hero Section with enhanced visual design -->
-  <Container as="section" class="relative pb-12 pt-16 sm:pb-16 sm:pt-24">
-    <!-- Decorative background elements -->
-    <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-      <div class="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-accent/5 blur-3xl"></div>
-      <div class="absolute -left-20 bottom-0 h-64 w-64 rounded-full bg-accent/3 blur-2xl"></div>
-    </div>
-
-    <div class="relative grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
-      <div class="animate-fade-in-up">
-        <p class="section-kicker mb-4 text-accent">Jenny Ma / Personal Blog</p>
-        <h1 class="max-w-4xl font-display text-4xl font-bold tracking-tight text-text sm:text-6xl lg:text-7xl">
-          Writing systems for<br/>
-          <span class="text-gradient">technical work</span> that lasts.
-        </h1>
-        <p class="mt-6 max-w-2xl text-lg leading-8 text-text-muted">
-          Notes on machine learning experiments, product systems, research workflows, and the practical craft of building useful tools.
-        </p>
-        <div class="mt-8 flex flex-wrap gap-3">
-          <ButtonLink href="/blog/" variant="primary" class="glow-accent-hover">Read the blog</ButtonLink>
-          <ButtonLink href="/projects/">View projects</ButtonLink>
-        </div>
+  <!-- Hero — Claude editorial style -->
+  <Container as="section" class="pb-16 pt-20 sm:pb-24 sm:pt-32">
+    <div class="max-w-3xl">
+      <p class="section-kicker mb-5 text-accent">Jenny Ma / 个人博客</p>
+      <h1 class="text-4xl font-medium tracking-tight text-text sm:text-5xl lg:text-6xl" style="font-family: 'Playfair Display', 'Noto Serif SC', Georgia, serif; line-height: 1.15;">
+        为持久的技术工作<br/>而写作。
+      </h1>
+      <p class="mt-8 max-w-xl text-lg leading-8 text-text-muted">
+        关于机器学习实验、产品系统、研究工作流的笔记，以及构建实用工具的实践心得。
+      </p>
+      <div class="mt-10 flex flex-wrap gap-3">
+        <ButtonLink href="/blog/" variant="primary">阅读文章</ButtonLink>
+        <ButtonLink href="/projects/">查看项目</ButtonLink>
       </div>
-
-      <aside class="surface-card gradient-border p-6 animate-slide-in-right stagger-2">
-        <p class="section-kicker">Current note</p>
-        <p class="mt-4 text-lg font-medium leading-7 text-text">
-          Building a sharper public writing practice around reproducible experiments and focused software tools.
-        </p>
-        <div class="mt-6 grid grid-cols-3 gap-3 border-t border-border pt-5 text-sm">
-          <div class="text-center">
-            <p class="text-2xl font-bold text-accent">{posts.length}</p>
-            <p class="mt-1 text-text-subtle">Posts</p>
-          </div>
-          <div class="text-center">
-            <p class="text-2xl font-bold text-accent">{featuredProjects.length}</p>
-            <p class="mt-1 text-text-subtle">Projects</p>
-          </div>
-          <div class="text-center">
-            <p class="text-2xl font-bold text-accent">Static</p>
-            <p class="mt-1 text-text-subtle">Deploy</p>
-          </div>
-        </div>
-      </aside>
     </div>
   </Container>
 
-  <!-- Featured Writing Section -->
-  <Container as="section" class="grid gap-10 pb-16 lg:grid-cols-[1.25fr_0.75fr]">
-    <div class="animate-fade-in-up stagger-3">
-      <SectionHeading
-        eyebrow="Featured writing"
-        title="Selected essays and working notes."
-        description="A compact reading list for the ideas that define this site."
-        actionHref="/blog/"
-        actionLabel="All posts"
-      />
-      <div class="rounded-xl border-y border-border bg-surface/35 px-1">
-        {featuredPosts.map((post) => <PostCard post={post} />)}
+  <!-- 当前笔记 -->
+  <Container as="section" class="pb-16">
+    <div class="surface-card p-8 max-w-2xl">
+      <p class="section-kicker mb-4">当前笔记</p>
+      <p class="text-lg font-medium leading-8 text-text" style="font-family: 'Playfair Display', 'Noto Serif SC', Georgia, serif;">
+        围绕可复现实验和专注的软件工具，构建更清晰的公开写作习惯。
+      </p>
+      <div class="mt-8 grid grid-cols-3 gap-6 border-t border-border pt-6 text-sm">
+        <div>
+          <p class="text-2xl font-medium text-text">{posts.length}</p>
+          <p class="mt-1 text-text-subtle">篇文章</p>
+        </div>
+        <div>
+          <p class="text-2xl font-medium text-text">{featuredProjects.length}</p>
+          <p class="mt-1 text-text-subtle">个项目</p>
+        </div>
+        <div>
+          <p class="text-2xl font-medium text-text">静态</p>
+          <p class="mt-1 text-text-subtle">部署方式</p>
+        </div>
       </div>
     </div>
+  </Container>
 
-    <aside class="space-y-4 animate-fade-in-up stagger-4">
-      <div class="surface-card p-6">
-        <p class="section-kicker">About</p>
-        <p class="mt-4 leading-7 text-text-muted">
-          I use this site as a durable home for research notes, engineering decisions, and project writeups.
-        </p>
-        <a href="/about/" class="text-link focus-ring mt-5 inline-flex items-center gap-1.5 rounded-sm text-sm">
-          More about me
-          <svg class="size-3.5 transition-transform group-hover:translate-x-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
+  <!-- 精选文章 -->
+  <Container as="section" class="pb-20">
+    <SectionHeading
+      eyebrow="精选文章"
+      title="值得一读的笔记。"
+      description="定义这个网站核心思想的精选阅读列表。"
+      actionHref="/blog/"
+      actionLabel="全部文章"
+    />
+    <div class="rounded-xl border-y border-border bg-surface/40 px-2">
+      {featuredPosts.map((post) => <PostCard post={post} />)}
+    </div>
+  </Container>
+
+  <!-- 关于 + 最新文章 -->
+  <Container as="section" class="grid gap-8 pb-20 lg:grid-cols-[1fr_0.6fr]">
+    <div class="surface-card p-8">
+      <p class="section-kicker mb-4">关于</p>
+      <p class="leading-8 text-text-muted text-[1.06rem]" style="font-family: 'Playfair Display', 'Noto Serif SC', Georgia, serif;">
+        我将这个网站作为研究笔记、工程决策和项目总结的持久家园。
+      </p>
+      <a href="/about/" class="text-link focus-ring mt-6 inline-block rounded-md text-sm">了解更多 →</a>
+    </div>
+
+    {latestPost && (
+      <div class="surface-card-interactive p-8">
+        <p class="section-kicker mb-4">最新发布</p>
+        <a href={`/blog/${latestPost.slug}/`} class="focus-ring block rounded-md text-lg font-medium text-text no-underline hover:text-accent transition-colors" style="font-family: 'Playfair Display', 'Noto Serif SC', Georgia, serif;">
+          {latestPost.data.title}
         </a>
+        <p class="mt-3 text-sm leading-7 text-text-muted">{latestPost.data.description}</p>
       </div>
-
-      {
-        latestPost && (
-          <div class="surface-card-interactive gradient-border p-6">
-            <p class="section-kicker">Latest</p>
-            <a href={`/blog/${latestPost.slug}/`} class="focus-ring mt-4 block rounded-sm text-lg font-semibold text-text no-underline hover:text-accent transition-colors">
-              {latestPost.data.title}
-            </a>
-            <p class="mt-3 text-sm leading-6 text-text-muted">{latestPost.data.description}</p>
-          </div>
-        )
-      }
-    </aside>
+    )}
   </Container>
 
-  <!-- Featured Projects Section with enhanced styling -->
-  <section class="relative border-y border-border bg-surface/42 overflow-hidden">
-    <div class="pointer-events-none absolute inset-0 dot-pattern opacity-30" aria-hidden="true"></div>
-    <Container class="relative py-14">
+  <!-- 精选项目 -->
+  <section class="border-t border-border bg-surface/50">
+    <Container class="py-20">
       <SectionHeading
-        eyebrow="Featured projects"
-        title="Selected project work."
-        description="Small, practical systems with clear constraints and durable notes."
+        eyebrow="精选项目"
+        title="实践中的系统。"
+        description="小型、实用的系统，具有清晰的约束和持久的笔记。"
         actionHref="/projects/"
-        actionLabel="All projects"
+        actionLabel="全部项目"
       />
-      <div class="grid gap-4 md:grid-cols-3">
+      <div class="grid gap-5 md:grid-cols-3">
         {featuredProjects.map((project) => <ProjectCard project={project} />)}
       </div>
     </Container>
   </section>
 
-  <!-- Newsletter/Subscribe hint section -->
-  <Container as="section" class="py-16 text-center">
-    <div class="animate-fade-in-up stagger-5">
-      <p class="section-kicker mb-3">Stay updated</p>
-      <h2 class="text-2xl font-semibold tracking-normal text-text sm:text-3xl">
-        Follow along with the <span class="text-gradient">RSS feed</span>.
-      </h2>
-      <p class="mt-3 text-text-muted">
-        No algorithms, no noise — just the writing.
-      </p>
-      <div class="mt-6">
-        <ButtonLink href="/rss.xml" variant="secondary" class="group">
-          <svg class="mr-2 size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16M5 21a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
-          </svg>
-          Subscribe via RSS
-        </ButtonLink>
-      </div>
+  <!-- RSS 订阅 -->
+  <Container as="section" class="py-20 text-center">
+    <p class="section-kicker mb-4">保持更新</p>
+    <h2 class="text-2xl font-medium tracking-tight text-text sm:text-3xl" style="font-family: 'Playfair Display', 'Noto Serif SC', Georgia, serif;">
+      通过 RSS 订阅。
+    </h2>
+    <p class="mt-4 text-text-muted">没有算法，没有噪音——只有写作。</p>
+    <div class="mt-8">
+      <ButtonLink href="/rss.xml" variant="secondary">订阅 RSS</ButtonLink>
     </div>
   </Container>
 </BaseLayout>

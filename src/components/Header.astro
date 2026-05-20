@@ -10,32 +10,27 @@ const isActive = (href: string) => {
 };
 ---
 
-<header class="sticky top-0 z-40 border-b border-border/60 bg-canvas/70 backdrop-blur-2xl">
+<header class="sticky top-0 z-40 border-b border-border bg-canvas/90 backdrop-blur-xl">
   <div class="container-page flex min-h-16 items-center justify-between gap-4">
-    <a href="/" class="focus-ring group inline-flex items-center gap-3 rounded-sm text-sm font-semibold tracking-normal text-text no-underline">
-      <span class="grid size-8 place-items-center rounded-lg bg-gradient-to-br from-accent to-accent-strong text-[11px] font-bold text-white shadow-sm transition-shadow group-hover:shadow-md">
-        JM
-      </span>
-      <span class="hidden sm:inline">{site.name}</span>
+    <a href="/" class="focus-ring group inline-flex items-center gap-3 rounded-lg text-sm font-medium text-text no-underline">
+      <span class="grid size-8 place-items-center rounded-lg bg-text text-[11px] font-bold text-canvas">JM</span>
+      <span class="hidden sm:inline tracking-tight">{site.name}</span>
     </a>
 
-    <nav class="hidden items-center gap-0.5 md:flex" aria-label="Primary navigation">
+    <nav class="hidden items-center gap-1 md:flex" aria-label="主导航">
       {
         site.nav.map((item) => (
           <a
             href={item.href}
             aria-current={isActive(item.href) ? "page" : undefined}
             class:list={[
-              "focus-ring relative rounded-lg px-3.5 py-2 text-sm no-underline transition duration-200",
+              "focus-ring rounded-lg px-3.5 py-2 text-sm no-underline transition duration-200",
               isActive(item.href)
                 ? "bg-surface-muted font-medium text-text"
-                : "text-text-muted hover:bg-surface-muted/60 hover:text-text"
+                : "text-text-muted hover:text-text"
             ]}
           >
             {item.label}
-            {isActive(item.href) && (
-              <span class="absolute bottom-0 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full bg-accent" aria-hidden="true" />
-            )}
           </a>
         ))
       }
@@ -45,12 +40,12 @@ const isActive = (href: string) => {
       <ThemeToggle />
 
       <details class="relative md:hidden">
-        <summary class="focus-ring grid size-11 cursor-pointer list-none place-items-center rounded-lg border border-border bg-surface-raised text-text-muted shadow-sm transition hover:border-border-strong hover:text-text" aria-label="Open menu">
+        <summary class="focus-ring grid size-11 cursor-pointer list-none place-items-center rounded-lg border border-border bg-surface text-text-muted transition hover:border-border-strong hover:text-text" aria-label="打开菜单">
           <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M4 7h16M4 12h16M4 17h16"/>
           </svg>
         </summary>
-        <nav class="absolute right-0 mt-2 w-52 rounded-xl border border-border bg-surface-raised/95 p-2 shadow-lift backdrop-blur-xl" aria-label="Mobile navigation">
+        <nav class="absolute right-0 mt-2 w-48 rounded-xl border border-border bg-surface p-2 shadow-soft" aria-label="移动端导航">
           {
             site.nav.map((item) => (
               <a
@@ -60,7 +55,7 @@ const isActive = (href: string) => {
                   "focus-ring block min-h-11 rounded-lg px-3.5 py-3 text-sm no-underline transition-colors",
                   isActive(item.href)
                     ? "bg-surface-muted font-medium text-text"
-                    : "text-text-muted hover:bg-surface-muted/60 hover:text-text"
+                    : "text-text-muted hover:text-text"
                 ]}
               >
                 {item.label}

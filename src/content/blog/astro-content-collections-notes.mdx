@@ -1,25 +1,25 @@
 ---
-title: "Astro Content Collections as a Personal CMS"
-description: "Why typed frontmatter is enough for a focused personal publishing workflow."
+title: "Astro 内容集合作为个人 CMS"
+description: "为什么类型化的 frontmatter 对于专注的个人发布工作流来说已经足够。"
 pubDate: 2026-04-18
-updatedDate: 2026-04-20
-tags: ["Astro", "MDX", "Content"]
+updatedDate: 2026-05-20
+tags: ["Astro", "MDX", "内容"]
 draft: false
 featured: true
 heroImage: "/og.svg"
 ---
 
-Astro Content Collections are a practical middle ground between loose Markdown files and a full CMS. They keep the writing workflow file-based while giving the application typed metadata.
+Astro 内容集合是松散的 Markdown 文件和完整 CMS 之间的实用中间地带。它们保持写作工作流基于文件，同时为应用程序提供类型化的元数据。
 
-## Why collections help
+## 为什么集合有帮助
 
-Frontmatter starts small, then grows. A post may need a title and date at first, then tags, draft state, featured state, Open Graph images, and update timestamps.
+Frontmatter 从小开始，然后增长。一篇文章最初可能只需要标题和日期，然后是标签、草稿状态、精选状态、Open Graph 图片和更新时间戳。
 
-Without a schema, mistakes become runtime surprises. With a schema, missing metadata is caught during development or build.
+没有模式，错误会成为运行时的意外。有了模式，缺失的元数据会在开发或构建期间被捕获。
 
-## A useful shape
+## 有用的形状
 
-For this site, the core post fields are:
+对于这个网站，核心文章字段是：
 
 - `title`
 - `description`
@@ -30,8 +30,8 @@ For this site, the core post fields are:
 - `featured`
 - `heroImage`
 
-Those fields are enough for listing pages, RSS, SEO, archive grouping, tag pages, and article navigation.
+这些字段足以用于列表页面、RSS、SEO、归档分组、标签页面和文章导航。
 
-## Keep it static
+## 保持静态
 
-The site should not need a database to publish essays. Git is already a good content history. Static output also keeps GitHub Pages deployment simple and cheap to maintain.
+网站不应该需要数据库来发布文章。Git 已经是很好的内容历史。静态输出也使 GitHub Pages 部署简单且维护成本低。

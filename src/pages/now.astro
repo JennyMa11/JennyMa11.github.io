@@ -14,13 +14,13 @@ if (!page) {
 const { Content } = await page.render();
 ---
 
-<BaseLayout title="Now" description={page.data.description}>
+<BaseLayout title="当下" description={page.data.description}>
   <PageHeader
-    eyebrow={page.data.updatedDate ? `Updated ${formatDate(page.data.updatedDate)}` : "Now"}
+    eyebrow={page.data.updatedDate ? `更新于 ${formatDate(page.data.updatedDate)}` : "当下"}
     title={page.data.title}
     description={page.data.description}
   />
-  <Container as="section" prose class="pb-16">
+  <Container as="section" prose class="pb-20">
     <div class="content">
       <Content />
     </div>

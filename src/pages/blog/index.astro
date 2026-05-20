@@ -8,15 +8,15 @@ import { getPublishedPosts } from "@/lib/content";
 const posts = await getPublishedPosts();
 ---
 
-<BaseLayout title="Blog" description="Essays, notes, and technical writing.">
+<BaseLayout title="文章" description="随笔、笔记和技术写作。">
   <PageHeader
-    eyebrow="Blog"
-    title="Essays and working notes."
-    description="Long-form posts, concise notes, and technical writeups arranged by publication date."
+    eyebrow="文章"
+    title="随笔与工作笔记。"
+    description="长文、简短笔记和技术总结，按发布日期排列。"
   />
 
-  <Container as="section" class="pb-16">
-    <div class="rounded-lg border-y border-border bg-surface/35 px-1">
+  <Container as="section" class="pb-20">
+    <div class="rounded-xl border-y border-border bg-surface/40 px-2">
       {posts.map((post) => <PostCard post={post} />)}
     </div>
   </Container>

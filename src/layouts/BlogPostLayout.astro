@@ -35,76 +35,60 @@ const readingTime = getReadingTime(post.body);
     image: new URL(post.data.heroImage ?? "/og.svg", Astro.site).href
   })} />
 
-  <article class="container-prose py-12 sm:py-20">
-    <a href="/blog/" class="text-link focus-ring inline-flex min-h-9 items-center rounded-sm text-sm">
-      Back to blog
+  <article class="container-prose py-16 sm:py-24">
+    <a href="/blog/" class="text-link focus-ring inline-flex min-h-9 items-center rounded-md text-sm">
+      ← 返回文章
     </a>
 
-    <header class="mt-8">
-      <div class="mb-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-text-subtle">
+    <header class="mt-10">
+      <div class="mb-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-text-subtle">
         <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
-        <span aria-hidden="true">/</span>
+        <span aria-hidden="true">·</span>
         <span>{readingTime}</span>
         {
           post.data.updatedDate && (
             <>
-              <span aria-hidden="true">/</span>
-              <span>Updated {formatDate(post.data.updatedDate)}</span>
+              <span aria-hidden="true">·</span>
+              <span>更新于 {formatDate(post.data.updatedDate)}</span>
             </>
           )
         }
       </div>
-      <h1 class="text-4xl font-semibold tracking-normal text-text sm:text-5xl">
+
+      <h1 class="text-3xl font-medium tracking-tight text-text sm:text-4xl" style="font-family: 'Playfair Display', 'Noto Serif SC', Georgia, serif; line-height: 1.2;">
         {post.data.title}
       </h1>
+
       <p class="mt-5 text-lg leading-8 text-text-muted">{post.data.description}</p>
-      <div class="mt-6 flex flex-wrap gap-2">
-        {post.data.tags.map((tag) => <TagPill tag={tag} />)}
-      </div>
+
       {
-        post.data.heroImage && (
-          <img
-            src={post.data.heroImage}
-            alt=""
-            class="mt-10 aspect-[16/8] w-full rounded-lg border border-border object-cover shadow-soft"
-          />
+        post.data.tags.length > 0 && (
+          <div class="mt-6 flex flex-wrap gap-2">
+            {post.data.tags.map((tag) => <TagPill tag={tag} />)}
+          </div>
         )
       }
     </header>
 
-    <div class="content mt-12">
+    <hr class="my-10 border-border" />
+
+    <div class="content">
       <slot />
     </div>
 
-    <footer class="mt-14 border-t border-border pt-8">
-      <div class="mb-8 flex flex-wrap gap-2">
-        {post.data.tags.map((tag) => <TagPill tag={tag} />)}
-      </div>
+    <hr class="my-12 border-border" />
 
-      <nav class="grid gap-3 sm:grid-cols-2" aria-label="Post navigation">
-        {
-          olderPost ? (
-            <a class="surface-card-interactive focus-ring block p-4 no-underline" href={`/blog/${olderPost.slug}/`}>
-              <span class="block text-sm text-text-subtle">Previous</span>
-              <span class="mt-1 block font-medium text-text">{olderPost.data.title}</span>
-            </a>
-          ) : (
-            <span></span>
-          )
-        }
-        {
-          newerPost && (
-            <a class="surface-card-interactive focus-ring block p-4 text-left no-underline sm:text-right" href={`/blog/${newerPost.slug}/`}>
-              <span class="block text-sm text-text-subtle">Next</span>
-              <span class="mt-1 block font-medium text-text">{newerPost.data.title}</span>
-            </a>
-          )
-        }
-      </nav>
-
-      <div class="mt-8">
-        <ButtonLink href="/archive/" variant="ghost">Browse archive</ButtonLink>
-      </div>
-    </footer>
+    <nav class="flex items-center justify-between text-sm">
+      {newerPost ? (
+        <a href={`/blog/${newerPost.slug}/`} class="text-link focus-ring rounded-md">
+          ← {newerPost.data.title}
+        </a>
+      ) : <span />}
+      {olderPost ? (
+        <a href={`/blog/${olderPost.slug}/`} class="text-link focus-ring rounded-md text-right">
+          {olderPost.data.title} →
+        </a>
+      ) : <span />}
+    </nav>
   </article>
 </BaseLayout>

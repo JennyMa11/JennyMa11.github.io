@@ -2,50 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
-
 :root {
   color-scheme: light;
-  --color-canvas: 250 250 249;
-  --color-surface: 255 255 255;
-  --color-surface-raised: 255 255 255;
-  --color-surface-muted: 244 244 242;
-  --color-border: 226 226 222;
-  --color-border-strong: 202 202 196;
-  --color-text: 24 24 22;
-  --color-text-muted: 84 84 78;
-  --color-text-subtle: 128 128 119;
-  --color-accent: 10 132 98;
-  --color-accent-strong: 7 112 84;
-  --color-accent-soft: 226 247 240;
-  --color-code-surface: 18 18 16;
-  --page-x: clamp(1rem, 2.4vw, 1.5rem);
-  --gradient-primary: linear-gradient(135deg, rgb(10 132 98) 0%, rgb(5 150 105) 50%, rgb(16 185 129) 100%);
-  --gradient-hero: radial-gradient(ellipse at 20% 50%, rgba(10, 132, 98, 0.08) 0%, transparent 50%),
-                   radial-gradient(ellipse at 80% 20%, rgba(16, 185, 129, 0.06) 0%, transparent 40%),
-                   radial-gradient(ellipse at 50% 80%, rgba(5, 150, 105, 0.04) 0%, transparent 60%);
-  --shadow-glow: 0 0 20px rgba(10, 132, 98, 0.15);
+  /* Claude warm parchment palette */
+  --color-canvas: 245 244 237;          /* #f5f4ed — parchment */
+  --color-surface: 250 249 245;         /* #faf9f5 — ivory */
+  --color-surface-raised: 255 255 255;  /* pure white for elevated cards */
+  --color-surface-muted: 232 230 220;   /* #e8e6dc — warm sand */
+  --color-border: 240 238 230;          /* #f0eee6 — border cream */
+  --color-border-strong: 226 224 215;   /* #e2e0d7 — visible border */
+  --color-text: 20 20 19;               /* #141413 — near black */
+  --color-text-muted: 94 93 89;         /* #5e5d59 — olive gray */
+  --color-text-subtle: 135 134 127;     /* #87867f — stone gray */
+  --color-accent: 201 100 66;           /* #c96442 — terracotta */
+  --color-accent-strong: 185 85 52;     /* #b95534 — deeper terracotta */
+  --color-accent-soft: 245 230 224;     /* #f5e6e0 — soft terracotta */
+  --color-code-surface: 28 28 26;       /* warm dark for code blocks */
+  --page-x: clamp(1.5rem, 3vw, 2rem);
+  --shadow-whisper: 0 4px 24px rgba(0, 0, 0, 0.05);
+  --shadow-ring: 0 0 0 1px rgba(209, 207, 197, 1);
 }
 
 :root.dark {
   color-scheme: dark;
-  --color-canvas: 10 11 10;
-  --color-surface: 16 17 15;
-  --color-surface-raised: 22 23 21;
-  --color-surface-muted: 28 29 27;
-  --color-border: 42 44 40;
-  --color-border-strong: 65 67 60;
-  --color-text: 244 244 241;
-  --color-text-muted: 180 181 174;
-  --color-text-subtle: 120 122 113;
-  --color-accent: 52 211 153;
-  --color-accent-strong: 110 231 183;
-  --color-accent-soft: 15 55 43;
-  --color-code-surface: 12 13 12;
-  --gradient-hero: radial-gradient(ellipse at 20% 50%, rgba(52, 211, 153, 0.06) 0%, transparent 50%),
-                   radial-gradient(ellipse at 80% 20%, rgba(110, 231, 183, 0.04) 0%, transparent 40%),
-                   radial-gradient(ellipse at 50% 80%, rgba(16, 185, 129, 0.03) 0%, transparent 60%);
-  --shadow-glow: 0 0 30px rgba(52, 211, 153, 0.1);
+  --color-canvas: 20 20 19;             /* #141413 */
+  --color-surface: 30 30 28;            /* #1e1e1c */
+  --color-surface-raised: 38 38 36;     /* #262624 */
+  --color-surface-muted: 48 48 46;      /* #30302e */
+  --color-border: 48 48 46;             /* #30302e */
+  --color-border-strong: 61 61 58;      /* #3d3d3a */
+  --color-text: 232 230 220;            /* #e8e6dc — parchment inverted */
+  --color-text-muted: 176 174 165;      /* #b0aea5 — warm silver */
+  --color-text-subtle: 135 134 127;     /* #87867f — muted warm */
+  --color-accent: 201 100 66;           /* #c96442 — terracotta unchanged */
+  --color-accent-strong: 217 119 87;    /* #d97757 — coral accent */
+  --color-accent-soft: 60 35 25;        /* dark terracotta soft */
+  --color-code-surface: 14 14 13;       /* deep dark */
+  --shadow-whisper: 0 4px 24px rgba(0, 0, 0, 0.2);
+  --shadow-ring: 0 0 0 1px rgba(61, 61, 58, 1);
 }
 
 html {
@@ -60,68 +54,11 @@ html[data-astro-transition] {
 
 body {
   @apply min-h-screen bg-canvas font-sans text-text selection:bg-accent-soft selection:text-text;
-  background-image: var(--gradient-hero);
+  line-height: 1.6;
 }
-
-/* Smooth page transitions */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.6s ease-out forwards;
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-out forwards;
-}
-
-.animate-slide-in-right {
-  animation: slideInRight 0.5s ease-out forwards;
-}
-
-/* Staggered animation delays */
-.stagger-1 { animation-delay: 0.1s; opacity: 0; }
-.stagger-2 { animation-delay: 0.2s; opacity: 0; }
-.stagger-3 { animation-delay: 0.3s; opacity: 0; }
-.stagger-4 { animation-delay: 0.4s; opacity: 0; }
-.stagger-5 { animation-delay: 0.5s; opacity: 0; }
 
 a {
-  @apply underline-offset-4 transition-colors;
+  @apply underline-offset-4 transition-colors duration-200;
 }
 
 summary::-webkit-details-marker {
@@ -129,11 +66,12 @@ summary::-webkit-details-marker {
 }
 
 code {
-  @apply rounded-sm border border-border bg-surface-muted px-1.5 py-0.5 font-mono text-[0.9em] text-text;
+  @apply rounded-md border border-border bg-surface-muted px-1.5 py-0.5 font-mono text-[0.9em] text-text;
 }
 
 pre {
-  @apply my-8 overflow-x-auto rounded-lg border border-border bg-code-surface p-5 text-sm leading-7 shadow-soft;
+  @apply my-8 overflow-x-auto rounded-xl border border-border bg-code-surface p-6 text-sm leading-7;
+  box-shadow: var(--shadow-whisper);
 }
 
 pre code {
@@ -141,56 +79,46 @@ pre code {
 }
 
 .content {
-  @apply max-w-none text-[1.04rem] leading-8 text-text-muted;
+  @apply max-w-none text-base leading-8 text-text-muted;
+  font-size: 1.06rem;
 }
 
 .content :where(h2, h3, h4) {
-  @apply scroll-mt-24 font-semibold tracking-normal text-text;
+  @apply scroll-mt-24 font-medium tracking-normal text-text;
+  font-family: 'Playfair Display', Georgia, 'Noto Serif SC', serif;
 }
 
 .content h2 {
-  @apply mb-4 mt-12 border-t border-border pt-8 text-2xl;
+  @apply mb-5 mt-14 border-t border-border pt-8 text-2xl;
 }
 
 .content h3 {
-  @apply mb-3 mt-8 text-xl;
+  @apply mb-4 mt-10 text-xl;
 }
 
 .content p {
   @apply my-5;
 }
 
-.content ul,
-.content ol {
-  @apply my-5 pl-6;
-}
-
-.content ul {
-  @apply list-disc;
-}
-
-.content ol {
-  @apply list-decimal;
-}
-
-.content li {
-  @apply my-2;
-}
+.content ul, .content ol { @apply my-5 pl-6; }
+.content ul { @apply list-disc; }
+.content ol { @apply list-decimal; }
+.content li { @apply my-2; }
 
 .content blockquote {
-  @apply my-8 rounded-r-lg border-l-2 border-accent bg-accent-soft/40 px-5 py-3 text-text-muted;
+  @apply my-8 rounded-r-xl border-l-2 border-accent bg-accent-soft/40 px-6 py-4 text-text-muted;
 }
 
 .content img {
-  @apply my-8 rounded-lg border border-border shadow-soft;
+  @apply my-8 rounded-xl border border-border;
+  box-shadow: var(--shadow-whisper);
 }
 
 .content table {
-  @apply my-8 w-full border-collapse overflow-hidden rounded-lg text-sm;
+  @apply my-8 w-full border-collapse overflow-hidden rounded-xl text-sm;
 }
 
-.content th,
-.content td {
+.content th, .content td {
   @apply border border-border px-3 py-2 text-left;
 }
 
@@ -199,18 +127,18 @@ pre code {
 }
 
 .content a {
-  @apply font-medium text-text decoration-border-strong hover:text-accent;
+  @apply font-medium text-accent decoration-accent/30 hover:decoration-accent;
 }
 
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation-duration: 180ms;
+  animation-duration: 200ms;
 }
 
 @layer components {
   .container-page {
     @apply mx-auto px-[var(--page-x)];
-    max-width: 68rem;
+    max-width: 72rem;
   }
 
   .container-prose {
@@ -219,76 +147,44 @@ pre code {
   }
 
   .surface-card {
-    @apply rounded-xl border border-border bg-surface-raised shadow-sm transition duration-300;
+    @apply rounded-xl border border-border bg-surface transition duration-300;
   }
 
   .surface-card-interactive {
-    @apply surface-card hover:-translate-y-1 hover:border-border-strong hover:shadow-lift;
+    @apply surface-card hover:-translate-y-0.5 hover:border-border-strong;
+    box-shadow: none;
+  }
+  .surface-card-interactive:hover {
+    box-shadow: var(--shadow-whisper);
   }
 
   .section-kicker {
-    @apply text-xs font-semibold uppercase tracking-[0.16em] text-text-subtle;
+    @apply text-xs font-medium uppercase tracking-[0.2em] text-text-subtle;
   }
 
   .text-link {
-    @apply font-medium text-text decoration-border-strong hover:text-accent;
+    @apply font-medium text-text decoration-border-strong hover:text-accent hover:decoration-accent;
   }
 
   .focus-ring {
     @apply outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-canvas;
   }
 
-  /* Gradient accent text */
-  .text-gradient {
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  /* Claude-style ring shadow for interactive elements */
+  .ring-shadow {
+    box-shadow: var(--shadow-ring);
+  }
+  .ring-shadow:hover {
+    box-shadow: 0 0 0 1px rgba(209, 207, 197, 0.8), var(--shadow-whisper);
   }
 
-  /* Glow effect for interactive elements */
-  .glow-accent {
-    box-shadow: var(--shadow-glow);
-  }
-
-  .glow-accent-hover:hover {
-    box-shadow: 0 0 30px rgba(10, 132, 98, 0.25);
-  }
-
-  /* Decorative dot pattern */
-  .dot-pattern {
-    background-image: radial-gradient(circle, rgb(var(--color-border)) 1px, transparent 1px);
-    background-size: 24px 24px;
-  }
-
-  /* Gradient border */
-  .gradient-border {
-    position: relative;
-  }
-  .gradient-border::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: var(--gradient-primary);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-  .gradient-border:hover::before {
-    opacity: 1;
+  .dark .ring-shadow:hover {
+    box-shadow: 0 0 0 1px rgba(61, 61, 58, 0.8), var(--shadow-whisper);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  ::before,
-  ::after {
+  *, ::before, ::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;

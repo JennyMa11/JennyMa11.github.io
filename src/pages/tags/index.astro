@@ -9,15 +9,15 @@ const posts = await getPublishedPosts();
 const tags = getAllTags(posts);
 ---
 
-<BaseLayout title="Tags" description="Browse posts by topic.">
+<BaseLayout title="标签" description="按主题浏览文章。">
   <PageHeader
-    eyebrow="Tags"
-    title="Topics across the archive."
-    description="Use tags to follow recurring themes and research areas."
+    eyebrow="标签"
+    title="归档中的主题。"
+    description="通过标签追踪反复出现的主题和研究领域。"
   />
 
-  <Container as="section" class="pb-16">
-    <div class="surface-card p-5">
+  <Container as="section" class="pb-20">
+    <div class="surface-card p-6">
       <div class="flex flex-wrap gap-3">
       {tags.map(({ tag, total }) => <TagPill tag={tag} count={total} />)}
       </div>

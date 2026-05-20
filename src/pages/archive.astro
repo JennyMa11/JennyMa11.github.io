@@ -9,26 +9,26 @@ const groups = groupPostsByYear(posts);
 const years = Object.keys(groups).sort((a, b) => Number(b) - Number(a));
 ---
 
-<BaseLayout title="Archive" description="A chronological archive of all published writing.">
+<BaseLayout title="归档" description="所有已发布文章的时间线归档。">
   <PageHeader
-    eyebrow="Archive"
-    title="All published writing."
-    description="A compact chronological view for scanning older posts."
+    eyebrow="归档"
+    title="所有已发布的文章。"
+    description="按时间线浏览，快速查找过往内容。"
   />
 
-  <Container as="section" class="pb-16">
-    <div class="space-y-10">
+  <Container as="section" class="pb-20">
+    <div class="space-y-12">
       {
         years.map((year) => (
           <section>
-            <h2 class="mb-4 text-2xl font-semibold tracking-normal text-text">{year}</h2>
-            <div class="divide-y divide-border rounded-lg border-y border-border bg-surface/35 px-1">
+            <h2 class="mb-5 text-2xl font-medium tracking-tight text-text" style="font-family: 'Playfair Display', 'Noto Serif SC', Georgia, serif;">{year}</h2>
+            <div class="divide-y divide-border rounded-xl border-y border-border bg-surface/40 px-2">
               {groups[year].map((post) => (
-                <a href={`/blog/${post.slug}/`} class="focus-ring grid gap-2 rounded-md px-3 py-4 no-underline transition hover:bg-surface-muted sm:grid-cols-[120px_1fr]">
+                <a href={`/blog/${post.slug}/`} class="focus-ring grid gap-2 rounded-lg px-4 py-5 no-underline transition hover:bg-surface-muted/30 sm:grid-cols-[120px_1fr]">
                   <time class="text-sm text-text-subtle" datetime={post.data.pubDate.toISOString()}>
                     {formatDate(post.data.pubDate)}
                   </time>
-                  <span class="font-medium text-text hover:text-accent">
+                  <span class="font-medium text-text hover:text-accent transition-colors">
                     {post.data.title}
                   </span>
                 </a>
