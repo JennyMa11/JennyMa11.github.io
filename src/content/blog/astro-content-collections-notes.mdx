@@ -1,37 +1,111 @@
 ---
-title: "Astro 内容集合作为个人 CMS"
-description: "为什么类型化的 frontmatter 对于专注的个人发布工作流来说已经足够。"
+title: "Astro Content Collections as Personal CMS"
+description: "为什么类型化的 Frontmatter 对于专注的个人发布工作流来说已经足够。"
 pubDate: 2026-04-18
 updatedDate: 2026-05-20
-tags: ["Astro", "MDX", "内容"]
+tags: ["Astro", "MDX", "Content"]
 draft: false
 featured: true
 heroImage: "/og.svg"
 ---
 
-Astro 内容集合是松散的 Markdown 文件和完整 CMS 之间的实用中间地带。它们保持写作工作流基于文件，同时为应用程序提供类型化的元数据。
+Astro Content Collections 是松散的 Markdown 文件和完整 CMS 之间的实用中间地带。它们保持写作工作流基于文件，同时为应用程序提供类型化的元数据。
 
-## 为什么集合有帮助
+## Why Collections Help
 
 Frontmatter 从小开始，然后增长。一篇文章最初可能只需要标题和日期，然后是标签、草稿状态、精选状态、Open Graph 图片和更新时间戳。
 
-没有模式，错误会成为运行时的意外。有了模式，缺失的元数据会在开发或构建期间被捕获。
+Content Collections 用 Zod schema 验证这些字段：
 
-## 有用的形状
+```typescript
+const blog = defineCollection({
+  type: "content",
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    pubDate: z.coerce.date(),
+    tags: z.array(z.string()).default([]),
+    draft: z.boolean().default(false),
+    featured: z.boolean().default(false)
+  })
+});
+```
 
-对于这个网站，核心文章字段是：
+## Type Safety
 
-- `title`
-- `description`
-- `pubDate`
-- `updatedDate`
-- `tags`
-- `draft`
-- `featured`
-- `heroImage`
+在编辑器中，你会得到：
+- 自动补全
+- 类型检查
+- 错误提示
 
-这些字段足以用于列表页面、RSS、SEO、归档分组、标签页面和文章导航。
+```typescript
+// ✅ 正确
+const posts = await getCollection("blog", ({ data }) => !data.draft);
 
-## 保持静态
+// ❌ 错误 - 编辑器会提示
+const posts = await getCollection("blog", ({ data }) => !data.isDraft);
+```
 
-网站不应该需要数据库来发布文章。Git 已经是很好的内容历史。静态输出也使 GitHub Pages 部署简单且维护成本低。
+## File-Based Workflow
+
+```
+src/content/blog/
+├── my-post.mdx
+├── another-post.mdx
+└── draft-post.mdx
+```
+
+每个文件就是一个文章，frontmatter 就是元数据。没有数据库，没有 API，只有文件。
+
+## Querying Content
+
+```typescript
+// 获取所有已发布的文章
+const posts = await getCollection("blog", ({ data }) => !data.draft);
+
+// 按日期排序
+const sortedPosts = posts.sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+
+// 获取精选文章
+const featuredPosts = posts.filter(({ data }) => data.featured);
+```
+
+## Advantages Over Full CMS
+
+| Feature | Content Collections | Full CMS |
+|---------|---------------------|----------|
+| Setup | Zero config | Database + API |
+| Version Control | Built-in (Git) | Manual |
+| Type Safety | Yes (Zod) | Depends |
+| Performance | Static files | Dynamic queries |
+| Deployment | Any static host | Requires server |
+
+## When to Use Full CMS
+
+- 多作者协作
+- 需要富文本编辑器
+- 复杂的媒体管理
+- 动态内容（评论、用户生成）
+
+## My Setup
+
+这个博客使用 Content Collections：
+- **Blog**：文章集合
+- **Projects**：项目集合
+- **Pages**：静态页面集合
+
+所有内容都是 MDX 文件，支持：
+- Markdown 语法
+- 组件嵌入
+- 代码高亮
+- 数学公式（KaTeX）
+
+## Summary
+
+Content Collections 是个人博客的理想选择。它们提供足够的结构来保持一致性，同时保持文件工作流的简洁性。
+
+---
+
+*Built with Astro Content Collections.*

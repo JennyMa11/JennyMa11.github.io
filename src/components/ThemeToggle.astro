@@ -18,10 +18,26 @@
 </button>
 
 <script>
-  const button = document.querySelector<HTMLButtonElement>("#theme-toggle");
-  button?.addEventListener("click", () => {
-    const nextTheme = document.documentElement.classList.contains("dark") ? "light" : "dark";
-    localStorage.setItem("theme", nextTheme);
-    document.documentElement.classList.toggle("dark", nextTheme === "dark");
-  });
+  // 初始化主题切换按钮
+  function initThemeToggle() {
+    const button = document.querySelector<HTMLButtonElement>("#theme-toggle");
+    if (!button) return;
+    
+    // 移除旧的事件监听器（如果有）
+    button.replaceWith(button.cloneNode(true));
+    const newButton = document.querySelector<HTMLButtonElement>("#theme-toggle");
+    
+    newButton?.addEventListener("click", () => {
+      const nextTheme = document.documentElement.classList.contains("dark") ? "light" : "dark";
+      localStorage.setItem("theme", nextTheme);
+      document.documentElement.classList.toggle("dark", nextTheme === "dark");
+    });
+  }
+  
+  // 首次加载
+  initThemeToggle();
+  
+  // View Transition 后重新初始化
+  document.addEventListener("astro:after-swap", initThemeToggle);
+  document.addEventListener("astro:page-load", initThemeToggle);
 </script>

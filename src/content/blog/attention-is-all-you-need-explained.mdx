@@ -1,92 +1,76 @@
 ---
-title: "详解 Attention is All You Need"
-description: "深入解析 Transformer 架构的开创性论文，理解自注意力机制如何革新了深度学习。"
+title: "Attention is All You Need: A Deep Dive"
+description: "深入解析 Transformer 架构的开创性论文，理解 Self-Attention 如何革新了 Deep Learning。"
 pubDate: 2026-05-18
-tags: ["Transformer", "深度学习", "NLP", "论文解读"]
+tags: ["Transformer", "Deep Learning", "NLP", "Paper Review"]
 draft: false
 featured: true
-heroImage: "/og.svg"
 ---
 
-2017 年，Google Brain 团队发表了这篇改变深度学习历史的论文。它提出了 Transformer 架构，完全基于注意力机制，抛弃了 RNN 和 CNN。
+2017 年，Google Brain 团队发表了这篇改变深度学习历史的论文。它提出了 Transformer 架构——完全基于 Attention 机制，抛弃了 RNN 和 CNN。
 
-## 核心问题
+## The Core Problem
 
 在 Transformer 之前，序列建模主要依赖 RNN（如 LSTM、GRU）。RNN 的根本问题是**顺序处理**——必须逐步计算，无法并行化。
 
-```
-h_t = f(h_{t-1}, x_t)  # 每一步依赖前一步
-```
+$$h_t = f(h_{t-1}, x_t)$$
 
 这导致两个严重问题：
 1. **训练速度慢**：无法并行处理序列
 2. **长距离依赖困难**：梯度消失/爆炸
 
-## Transformer 的核心思想
+## The Key Insight
 
-Transformer 的关键洞察：**可以用注意力机制直接建模序列中任意两个位置的关系**，不需要递归。
+Transformer 的关键洞察：**可以用 Attention 机制直接建模序列中任意两个位置的关系**，不需要递归。
 
-```
-Attention(Q, K, V) = softmax(QK^T / √d_k)V
-```
+### Scaled Dot-Product Attention
 
-### 自注意力机制
+核心公式：
 
-自注意力让每个位置都能"看到"序列中的所有其他位置：
+$$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$$
 
-```
-输入: "The cat sat on the mat"
-                 ↓
-    每个词计算与所有词的相关性
-                 ↓
-    加权聚合相关信息
-```
+其中：
+- $Q$ (Query)：查询矩阵
+- $K$ (Key)：键矩阵  
+- $V$ (Value)：值矩阵
+- $d_k$：Key 的维度
 
-**直觉理解**：就像阅读时，你会根据上下文理解每个词的含义。"bank" 在 "river bank" 和 "bank account" 中含义不同，自注意力能捕捉这种依赖。
+**直觉理解**：就像阅读时，你会根据上下文理解每个词的含义。"bank" 在 "river bank" 和 "bank account" 中含义不同，Self-Attention 能捕捉这种依赖。
 
-### 缩放点积注意力
+### 为什么要除以 $\sqrt{d_k}$？
 
-```python
-def scaled_dot_product_attention(Q, K, V, mask=None):
-    d_k = K.shape[-1]
-    scores = Q @ K.T / math.sqrt(d_k)  # 缩放
-    
-    if mask is not None:
-        scores = scores.masked_fill(mask == 0, -1e9)
-    
-    weights = F.softmax(scores, dim=-1)
-    return weights @ V
-```
+当维度较大时，点积值会很大，导致 softmax 进入饱和区，梯度接近零。缩放保持梯度稳定：
 
-**为什么要除以 √d_k？** 当维度较大时，点积值会很大，导致 softmax 进入饱和区，梯度接近零。缩放保持梯度稳定。
+$$\text{Var}(q \cdot k) = d_k$$
 
-## 多头注意力
+所以除以 $\sqrt{d_k}$ 使方差保持为 1。
 
-单个注意力头只能捕捉一种关系模式。多头注意力让模型同时关注不同类型的关系：
+## Multi-Head Attention
 
-```
-MultiHead(Q, K, V) = Concat(head_1, ..., head_h)W^O
+单个 Attention Head 只能捕捉一种关系模式。Multi-Head Attention 让模型同时关注不同类型的关系：
 
-where head_i = Attention(QW_i^Q, KW_i^K, VW_i^V)
-```
+$$\text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, ..., \text{head}_h)W^O$$
 
-**直觉**：一个头可能关注语法关系，另一个关注语义关系，第三个关注位置关系。
+其中每个 Head：
 
-## 位置编码
+$$\text{head}_i = \text{Attention}(QW_i^Q, KW_i^K, VW_i^V)$$
+
+**直觉**：一个 Head 可能关注语法关系，另一个关注语义关系，第三个关注位置关系。
+
+## Positional Encoding
 
 Transformer 没有递归，所以需要额外注入位置信息：
 
-```
-PE(pos, 2i) = sin(pos / 10000^(2i/d_model))
-PE(pos, 2i+1) = cos(pos / 10000^(2i/d_model))
-```
+$$PE_{(pos, 2i)} = \sin\left(\frac{pos}{10000^{2i/d_{\text{model}}}}\right)$$
 
-**为什么用正弦函数？** 因为它能表示相对位置——PE(pos+k) 可以用 PE(pos) 的线性变换表示。
+$$PE_{(pos, 2i+1)} = \cos\left(\frac{pos}{10000^{2i/d_{\text{model}}}}\right)$$
 
-## 编码器-解码器架构
+**为什么用正弦函数？** 因为它能表示相对位置——$PE_{(pos+k)}$ 可以用 $PE_{(pos)}$ 的线性变换表示。
+
+## Encoder-Decoder Architecture
 
 ```
-编码器 (6层):
+Encoder (6 layers):
 ┌─────────────────────┐
 │  Multi-Head Attention │
 │  Add & LayerNorm     │
@@ -94,52 +78,58 @@ PE(pos, 2i+1) = cos(pos / 10000^(2i/d_model))
 │  Add & LayerNorm     │
 └─────────────────────┘
 
-解码器 (6层):
+Decoder (6 layers):
 ┌─────────────────────┐
 │  Masked Multi-Head   │  ← 防止看到未来
 │  Add & LayerNorm     │
-│  Cross-Attention     │  ← 关注编码器输出
+│  Cross-Attention     │  ← 关注 Encoder 输出
 │  Add & LayerNorm     │
 │  Feed Forward        │
 │  Add & LayerNorm     │
 └─────────────────────┘
 ```
 
-**关键创新**：
-- **残差连接**：解决深层网络训练困难
-- **层归一化**：稳定训练
-- **掩码注意力**：解码时防止"偷看"未来
+**Key Innovations**：
+- **残差连接**：$x + \text{Sublayer}(x)$，解决深层网络训练困难
+- **Layer Normalization**：稳定训练
+- **Masked Attention**：解码时防止"偷看"未来
 
-## 为什么它如此成功？
+## Feed-Forward Network
+
+每层中的 Position-wise FFN：
+
+$$\text{FFN}(x) = \max(0, xW_1 + b_1)W_2 + b_2$$
+
+## Why It Works So Well?
 
 1. **并行化**：训练速度比 RNN 快一个数量级
-2. **长距离依赖**：任意两个位置直接连接
+2. **长距离依赖**：任意两个位置直接连接，路径长度 $O(1)$
 3. **可扩展性**：参数增加时性能持续提升
-4. **通用性**：不仅用于 NLP，还扩展到视觉、音频
+4. **通用性**：不仅用于 NLP，还扩展到 Vision、Audio
 
-## 现代影响
+## Modern Impact
 
 这篇论文直接催生了：
-- BERT、GPT 系列
-- Vision Transformer (ViT)
-- AlphaFold 2
-- 现代大语言模型
+- **BERT**、**GPT** 系列
+- **Vision Transformer (ViT)**
+- **AlphaFold 2**
+- 现代大语言模型（LLM）
 
-## 关键公式速查
+## Formula Cheat Sheet
 
-| 组件 | 公式 |
-|------|------|
-| 注意力 | softmax(QK^T/√d_k)V |
-| 位置编码 | sin/cos 函数 |
-| FFN | max(0, xW₁+b₁)W₂+b₂ |
-| 残差 | x + Sublayer(x) |
+| Component | Formula |
+|-----------|---------|
+| Attention | $\text{softmax}(QK^T/\sqrt{d_k})V$ |
+| Positional Encoding | $\sin/\cos$ functions |
+| FFN | $\max(0, xW_1+b_1)W_2+b_2$ |
+| Residual | $x + \text{Sublayer}(x)$ |
 
-## 总结
+## Summary
 
-Transformer 的伟大之处在于它的**简洁性**——用一个统一的注意力机制替代了复杂的递归结构。这种简洁带来了更好的并行性、更强的表达能力和更广的适用性。
+Transformer 的伟大之处在于它的**简洁性**——用一个统一的 Attention 机制替代了复杂的递归结构。这种简洁带来了更好的并行性、更强的表达能力和更广的适用性。
 
 理解这篇论文，是理解现代深度学习的基础。
 
 ---
 
-**论文链接**：[Attention is All You Need (arXiv:1706.03762)](https://arxiv.org/abs/1706.03762)
+**Paper Link**：[Attention is All You Need (arXiv:1706.03762)](https://arxiv.org/abs/1706.03762)

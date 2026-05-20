@@ -1,9 +1,9 @@
 ---
-title: "构建持久的写作系统"
+title: "Building a Durable Writing System"
 description: "一种轻量级的方法，让技术笔记在第一周之后仍然有用。"
 pubDate: 2026-05-01
 updatedDate: 2026-05-20
-tags: ["写作", "系统", "效率"]
+tags: ["Writing", "System", "Productivity"]
 draft: false
 featured: true
 heroImage: "/og.svg"
@@ -11,13 +11,13 @@ heroImage: "/og.svg"
 
 好的写作系统不需要太多活动部件。它们需要清晰的入口、稳定的审查习惯，以及从粗糙笔记到发布作品的低摩擦路径。
 
-## 捕获
+## Capture
 
 捕获应该足够快，以至于不会成为一项单独的任务。我将简短笔记保持在工作附近：实验日志靠近代码，产品观察靠近截图，文章片段靠近大纲。
 
 重要的区别在于*捕获*和*承诺*之间。一个被捕获的想法允许不完整。一个被承诺的笔记有标题、目的和可能的读者。
 
-## 塑形
+## Shape
 
 每个持久的笔记都会经过三遍打磨：
 
@@ -27,8 +27,26 @@ heroImage: "/og.svg"
 
 最后一个问题是最有杠杆效应的编辑。发布的写作应该保留论证，而不是产生它的每一步。
 
-## 发布
+## Publish
 
-当网站的表面区域较窄时，定期发布会更容易。这个博客将文章保存在 MDX 中，项目保存在内容集合中，部署在 GitHub Actions 中。没有数据库，也没有需要维护的运行时服务。
+当网站的表面区域较窄时，定期发布会更容易。这个博客将文章保存在 MDX 中，项目保存在 Content Collections 中，部署在 GitHub Actions 中。没有数据库，也没有需要维护的运行时服务。
 
 结果是有意为之的无聊基础设施：静态文件、版本化内容和可重复的构建。
+
+## Tools I Use
+
+- **Obsidian**：用于本地笔记和想法捕获
+- **VS Code**：用于编辑 MDX 文件
+- **GitHub**：版本控制和自动部署
+- **Astro**：静态站点生成
+
+## Key Principles
+
+1. **Low Friction**：捕获想法应该只需要几秒钟
+2. **Versioned**：所有内容都应该在 Git 中
+3. **Automated**：部署应该是自动的
+4. **Focused**：只保留有价值的内容
+
+---
+
+*This blog is built with Astro and deployed to GitHub Pages.*
