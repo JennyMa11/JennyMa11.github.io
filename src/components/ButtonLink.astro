@@ -9,9 +9,9 @@ const { href, variant = "secondary", class: className = "" } = Astro.props;
 
 const variants = {
   primary:
-    "border-accent bg-accent text-white hover:bg-accent-strong hover:border-accent-strong dark:text-canvas",
+    "border-accent bg-gradient-to-r from-accent to-accent-strong text-white hover:from-accent-strong hover:to-accent hover:shadow-md dark:text-white",
   secondary:
-    "border-border bg-surface-raised text-text hover:border-border-strong hover:bg-surface-muted",
+    "border-border bg-surface-raised text-text hover:border-border-strong hover:bg-surface-muted hover:shadow-sm",
   ghost:
     "border-transparent bg-transparent text-text-muted hover:text-text hover:bg-surface-muted"
 };
@@ -20,7 +20,7 @@ const variants = {
 <a
   href={href}
   class:list={[
-    "focus-ring inline-flex min-h-11 items-center justify-center rounded-md border px-4 py-2 text-sm font-medium no-underline transition duration-200",
+    "focus-ring group inline-flex min-h-11 items-center justify-center rounded-xl border px-5 py-2.5 text-sm font-medium no-underline transition-all duration-200",
     variants[variant],
     className
   ]}

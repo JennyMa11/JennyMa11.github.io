@@ -10,16 +10,23 @@ const { post } = Astro.props;
 const readingTime = getReadingTime(post.body);
 ---
 
-<article class="group border-b border-border py-7 last:border-b-0">
-  <div class="flex flex-col gap-3">
+<article class="group border-b border-border py-7 last:border-b-0 transition-colors hover:bg-surface-muted/30">
+  <div class="flex flex-col gap-3 px-2">
     <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-text-subtle">
       <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
-      <span aria-hidden="true">/</span>
+      <span aria-hidden="true" class="text-border-strong">·</span>
       <span>{readingTime}</span>
-      {post.data.featured && <span class="font-medium text-accent">Featured</span>}
+      {post.data.featured && (
+        <span class="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-medium text-accent">
+          <svg class="size-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          Featured
+        </span>
+      )}
     </div>
-    <h2 class="text-2xl font-semibold tracking-normal text-text">
-      <a href={`/blog/${post.slug}/`} class="focus-ring rounded-sm no-underline decoration-border-strong group-hover:text-accent group-hover:underline">
+    <h2 class="text-2xl font-semibold tracking-tight text-text">
+      <a href={`/blog/${post.slug}/`} class="focus-ring rounded-sm no-underline decoration-border-strong group-hover:text-accent group-hover:underline transition-colors">
         {post.data.title}
       </a>
     </h2>

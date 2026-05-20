@@ -24,7 +24,7 @@ const fullTitle = title === site.title ? title : `${title} - ${site.name}`;
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="generator" content={Astro.generator} />
 <meta name="theme-color" content="#fafaf9" media="(prefers-color-scheme: light)" />
-<meta name="theme-color" content="#0e0f0e" media="(prefers-color-scheme: dark)" />
+<meta name="theme-color" content="#0a0b0a" media="(prefers-color-scheme: dark)" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <link rel="canonical" href={canonical} />
 <title>{fullTitle}</title>
@@ -41,6 +41,9 @@ const fullTitle = title === site.title ? title : `${title} - ${site.name}`;
 <meta name="twitter:description" content={description} />
 <meta name="twitter:image" content={imageUrl} />
 <link rel="alternate" type="application/rss+xml" title={site.name} href="/rss.xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
 <script is:inline>
   try {
     const storedTheme = localStorage.getItem("theme");
