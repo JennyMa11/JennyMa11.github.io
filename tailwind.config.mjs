@@ -6,18 +6,16 @@ export default {
     extend: {
       fontFamily: {
         sans: [
-          "Inter",
-          "ui-sans-serif",
-          "system-ui",
-          "Segoe UI",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "PingFang SC",
+          "Microsoft YaHei",
           "sans-serif"
         ],
         serif: [
-          "Playfair Display",
-          "Noto Serif SC",
-          "Georgia",
-          "ui-serif",
-          "serif"
+          "PingFang SC",
+          "Microsoft YaHei",
+          "sans-serif"
         ],
         mono: [
           "JetBrains Mono",

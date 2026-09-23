@@ -5,156 +5,86 @@ import PostCard from "@/components/PostCard.astro";
 import ProjectCard from "@/components/ProjectCard.astro";
 import SectionHeading from "@/components/SectionHeading.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { getFeaturedPosts, getFeaturedProjects, getPublishedPosts } from "@/lib/content";
+import { getFeaturedProjects, getPublishedPosts } from "@/lib/content";
 import { site } from "@/lib/site";
 
-const [featuredPosts, featuredProjects, posts] = await Promise.all([
-  getFeaturedPosts(3),
-  getFeaturedProjects(3),
-  getPublishedPosts()
+const [posts, projects] = await Promise.all([
+  getPublishedPosts(),
+  getFeaturedProjects(3)
 ]);
 
-const latestPost = posts[0];
+const recentPosts = posts.slice(0, 3);
+
+const layers = [
+  { number: "04", title: "系统层", detail: "调度 · 缓存 · 并行", href: "/infra/ch05.html" },
+  { number: "03", title: "执行层", detail: "编译 · Graph · Overlap", href: "/infra/ch04.html" },
+  { number: "02", title: "算子层", detail: "Attention · Kernel", href: "/infra/ch03.html" },
+  { number: "01", title: "模型层", detail: "量化 · 架构优化", href: "/infra/ch02.html" }
+];
 ---
 
 <BaseLayout title={site.title} description={site.description}>
-  <!-- Hero — Claude editorial style -->
-  <Container as="section" class="pb-16 pt-20 sm:pb-24 sm:pt-32">
-    <div class="max-w-3xl">
-      <p class="section-kicker mb-5 text-accent">Jenny Ma / Personal Blog</p>
-      <h1 class="text-4xl font-medium tracking-tight text-text sm:text-5xl lg:text-6xl" style="font-family: 'Playfair Display', 'Noto Serif SC', Georgia, serif; line-height: 1.15;">
-        Writing for<br/>durable technical work.
+  <Container as="section" class="grid items-center gap-12 pb-20 pt-16 sm:pt-24 lg:grid-cols-[1.12fr_0.88fr] lg:gap-20">
+    <div>
+      <p class="section-kicker mb-6">JENNY MA / TECHNICAL NOTES</p>
+      <h1 class="max-w-2xl text-[clamp(2.5rem,5vw,4rem)] font-extrabold leading-[1.18] tracking-[-0.055em] text-text">
+        把复杂技术，<br /><span class="text-accent">整理成清晰的路径。</span>
       </h1>
-      <p class="mt-8 max-w-xl text-lg leading-8 text-text-muted">
-        Notes on machine learning experiments, product systems, research workflows, and practical insights from building useful tools.
+      <p class="mt-7 max-w-xl text-base leading-8 text-text-muted sm:text-lg">
+        记录 AI Infra、机器学习实验与工程实践。从短文到系统手册，持续整理可以复用的知识。
       </p>
-      <div class="mt-10 flex flex-wrap gap-3">
-        <ButtonLink href="/blog/" variant="primary">Read Posts</ButtonLink>
-        <ButtonLink href="/infra/">Explore Infra Notes</ButtonLink>
-        <ButtonLink href="/projects/">View Projects</ButtonLink>
+      <div class="mt-9 flex flex-wrap gap-3">
+        <ButtonLink href="/infra/" variant="primary">进入 Infra 笔记 <span aria-hidden="true">↗</span></ButtonLink>
+        <ButtonLink href="/blog/">浏览文章 <span aria-hidden="true">→</span></ButtonLink>
       </div>
     </div>
-  </Container>
 
-  <!-- Current Notes -->
-  <Container as="section" class="pb-16">
-    <div class="surface-card p-8 max-w-2xl">
-      <p class="section-kicker mb-4">Current Focus</p>
-      <p class="text-lg font-medium leading-8 text-text" style="font-family: 'Playfair Display', 'Noto Serif SC', Georgia, serif;">
-        Building a clearer public writing habit around reproducible experiments and focused software tools.
-      </p>
-      <div class="mt-8 grid grid-cols-3 gap-6 border-t border-border pt-6 text-sm">
-        <div>
-          <p class="text-2xl font-medium text-text">{posts.length}</p>
-          <p class="mt-1 text-text-subtle">Posts</p>
-        </div>
-        <div>
-          <p class="text-2xl font-medium text-text">{featuredProjects.length}</p>
-          <p class="mt-1 text-text-subtle">Projects</p>
-        </div>
-        <div>
-          <p class="text-2xl font-medium text-text">Static</p>
-          <p class="mt-1 text-text-subtle">Deployment</p>
-        </div>
+    <aside class="rounded-2xl border border-border-strong bg-accent-soft/65 p-5 shadow-soft sm:p-6" aria-label="推理加速知识地图">
+      <div class="flex items-center justify-between text-[11px] font-bold tracking-[0.14em] text-accent-strong">
+        <span>INFERENCE STACK</span>
+        <span class="size-2 rounded-full bg-accent"></span>
       </div>
-    </div>
-  </Container>
-
-  <!-- Infra knowledge base -->
-  <Container as="section" class="pb-20">
-    <div class="surface-card overflow-hidden">
-      <div class="grid lg:grid-cols-[1.1fr_0.9fr]">
-        <div class="p-8 sm:p-10">
-          <p class="section-kicker mb-4 text-accent">Infra Knowledge Base</p>
-          <h2 class="text-2xl font-medium tracking-tight text-text sm:text-3xl" style="font-family: 'Playfair Display', 'Noto Serif SC', Georgia, serif;">
-            LLM 推理加速知识手册
-          </h2>
-          <p class="mt-5 max-w-xl leading-8 text-text-muted">
-            从 GPU 原理到推理服务架构，用原理、示意代码和面试追问串起模型、算子、执行与系统四层知识。
-          </p>
-          <div class="mt-7 flex flex-wrap items-center gap-5">
-            <ButtonLink href="/infra/" variant="primary">进入 Infra 学习笔记 →</ButtonLink>
-            <span class="text-xs text-text-subtle">10 章 · 21 张配图 · 全文搜索</span>
-          </div>
-        </div>
-        <div class="border-t border-border bg-surface-muted/40 p-8 lg:border-l lg:border-t-0 sm:p-10">
-          <p class="section-kicker mb-5">建议阅读路径</p>
-          <nav class="grid gap-3" aria-label="Infra 学习路线">
-            <a href="/infra/ch00.html" class="focus-ring flex items-center gap-4 rounded-lg border border-border bg-surface px-4 py-3 text-sm no-underline transition-colors hover:border-accent">
-              <span class="font-mono text-xs text-accent">01</span><span class="font-medium text-text">基础与全局地图</span><span class="ml-auto text-text-subtle">↗</span>
-            </a>
-            <a href="/infra/ch02.html" class="focus-ring flex items-center gap-4 rounded-lg border border-border bg-surface px-4 py-3 text-sm no-underline transition-colors hover:border-accent">
-              <span class="font-mono text-xs text-accent">02</span><span class="font-medium text-text">模型、算子与执行优化</span><span class="ml-auto text-text-subtle">↗</span>
-            </a>
-            <a href="/infra/ch05.html" class="focus-ring flex items-center gap-4 rounded-lg border border-border bg-surface px-4 py-3 text-sm no-underline transition-colors hover:border-accent">
-              <span class="font-mono text-xs text-accent">03</span><span class="font-medium text-text">推理系统与专题</span><span class="ml-auto text-text-subtle">↗</span>
-            </a>
-          </nav>
-        </div>
+      <p class="mt-4 text-lg font-bold tracking-tight text-text">沿四层架构，理解推理加速</p>
+      <div class="mt-5 grid gap-2">
+        {layers.map((layer) => (
+          <a href={layer.href} class="focus-ring grid grid-cols-[2rem_1fr_auto] items-center gap-3 rounded-lg border border-border bg-surface px-4 py-3 no-underline transition-all hover:-translate-y-0.5 hover:border-accent hover:shadow-soft">
+            <span class="font-mono text-xs font-bold text-accent">{layer.number}</span>
+            <span class="font-semibold text-text">{layer.title}</span>
+            <span class="hidden text-xs text-text-subtle sm:inline">{layer.detail}</span>
+          </a>
+        ))}
       </div>
-    </div>
+      <a href="/infra/" class="focus-ring mt-5 inline-flex items-center gap-2 rounded-md text-xs font-bold text-accent-strong no-underline hover:underline">
+        查看完整学习路线 <span aria-hidden="true">→</span>
+      </a>
+    </aside>
   </Container>
 
-  <!-- Featured Posts -->
-  <Container as="section" class="pb-20">
+  <Container as="section" class="border-t border-border py-16 sm:py-20">
     <SectionHeading
-      eyebrow="Featured Posts"
-      title="Worth reading."
-      description="A curated list of posts that define the core ideas of this site."
+      eyebrow="01 / ARTICLES"
+      title="最近的文章"
+      description="关于模型、实验与写作的持续记录。"
       actionHref="/blog/"
-      actionLabel="All Posts"
+      actionLabel="全部文章"
     />
-    <div class="rounded-xl border-y border-border bg-surface/40 px-2">
-      {featuredPosts.map((post) => <PostCard post={post} />)}
+    <div class="rounded-xl border border-border bg-surface px-4 sm:px-6">
+      {recentPosts.map((post) => <PostCard post={post} />)}
     </div>
   </Container>
 
-  <!-- About + Latest Post -->
-  <Container as="section" class="grid gap-8 pb-20 lg:grid-cols-[1fr_0.6fr]">
-    <div class="surface-card p-8">
-      <p class="section-kicker mb-4">About</p>
-      <p class="leading-8 text-text-muted text-[1.06rem]" style="font-family: 'Playfair Display', 'Noto Serif SC', Georgia, serif;">
-        I use this site as a durable home for research notes, engineering decisions, and project summaries.
-      </p>
-      <a href="/about/" class="text-link focus-ring mt-6 inline-block rounded-md text-sm">Learn more →</a>
-    </div>
-
-    {latestPost && (
-      <div class="surface-card-interactive p-8">
-        <p class="section-kicker mb-4">Latest Post</p>
-        <a href={`/blog/${latestPost.slug}/`} class="focus-ring block rounded-md text-lg font-medium text-text no-underline hover:text-accent transition-colors" style="font-family: 'Playfair Display', 'Noto Serif SC', Georgia, serif;">
-          {latestPost.data.title}
-        </a>
-        <p class="mt-3 text-sm leading-7 text-text-muted">{latestPost.data.description}</p>
-      </div>
-    )}
-  </Container>
-
-  <!-- Featured Projects -->
   <section class="border-t border-border bg-surface/50">
-    <Container class="py-20">
+    <Container class="py-16 sm:py-20">
       <SectionHeading
-        eyebrow="Featured Projects"
-        title="Systems in practice."
-        description="Small, practical systems with clear constraints and durable notes."
+        eyebrow="02 / PROJECTS"
+        title="项目实践"
+        description="把思路放进实际系统，记录约束、取舍和结果。"
         actionHref="/projects/"
-        actionLabel="All Projects"
+        actionLabel="全部项目"
       />
-      <div class="grid gap-5 md:grid-cols-3">
-        {featuredProjects.map((project) => <ProjectCard project={project} />)}
+      <div class="grid gap-4 md:grid-cols-3">
+        {projects.map((project) => <ProjectCard project={project} />)}
       </div>
     </Container>
   </section>
-
-  <!-- RSS Subscribe -->
-  <Container as="section" class="py-20 text-center">
-    <p class="section-kicker mb-4">Stay Updated</p>
-    <h2 class="text-2xl font-medium tracking-tight text-text sm:text-3xl" style="font-family: 'Playfair Display', 'Noto Serif SC', Georgia, serif;">
-      Subscribe via RSS.
-    </h2>
-    <p class="mt-4 text-text-muted">No algorithms, no noise—just writing.</p>
-    <div class="mt-8">
-      <ButtonLink href="/rss.xml" variant="secondary">Subscribe RSS</ButtonLink>
-    </div>
-  </Container>
 </BaseLayout>

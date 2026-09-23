@@ -64,11 +64,11 @@ export function getReadingTime(body = "") {
   const cjk = body.match(/[\u4e00-\u9fff]/g)?.length ?? 0;
   const minutes = Math.ceil((words + cjk / 2) / 220);
 
-  return `${Math.max(1, minutes)} min read`;
+  return `约 ${Math.max(1, minutes)} 分钟阅读`;
 }
 
 export function formatDate(date: Date) {
-  return new Intl.DateTimeFormat("en", {
+  return new Intl.DateTimeFormat("zh-CN", {
     year: "numeric",
     month: "short",
     day: "numeric"

@@ -5,13 +5,16 @@ import { site } from "@/lib/site";
 const year = new Date().getFullYear();
 ---
 
-<footer class="border-t border-border bg-surface/60">
-  <Container class="flex flex-col gap-5 py-12 text-sm text-text-subtle sm:flex-row sm:items-center sm:justify-between">
+<footer class="border-t border-border bg-surface">
+  <Container class="flex flex-col gap-5 py-9 text-sm text-text-subtle sm:flex-row sm:items-center sm:justify-between">
     <div>
       <p class="font-medium text-text">© {year} {site.name}</p>
-      <p class="mt-1">使用 Astro 与 GitHub Pages 构建的静态写作系统。</p>
+      <p class="mt-1">从原理走向实现，持续整理技术笔记。</p>
     </div>
-    <div class="flex items-center gap-5">
+    <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
+      <a class="text-link focus-ring rounded-md" href="/archive/">归档</a>
+      <a class="text-link focus-ring rounded-md" href="/tags/">标签</a>
+      <a class="text-link focus-ring rounded-md" href="/now/">近况</a>
       <a class="text-link focus-ring rounded-md" href="/rss.xml">RSS</a>
       <a class="text-link focus-ring rounded-md" href="https://github.com/JennyMa11">GitHub</a>
     </div>

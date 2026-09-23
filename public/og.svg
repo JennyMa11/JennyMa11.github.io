@@ -1,7 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
-  <rect width="1200" height="630" fill="#11120f"/>
-  <rect x="72" y="72" width="1056" height="486" rx="28" fill="#1f201d" stroke="#454640"/>
-  <text x="120" y="270" fill="#f8f8f7" font-family="Inter, Arial, sans-serif" font-size="76" font-weight="700">Jenny Ma</text>
-  <text x="120" y="350" fill="#b7b8af" font-family="Inter, Arial, sans-serif" font-size="34">Writing, projects, and notes on building useful systems.</text>
-  <circle cx="1010" cy="180" r="42" fill="#10a37f"/>
+  <rect width="1200" height="630" fill="#f8faf8"/>
+  <rect x="72" y="72" width="1056" height="486" rx="28" fill="#ffffff" stroke="#dce8e1"/>
+  <rect x="120" y="128" width="64" height="64" rx="15" fill="#087b69"/>
+  <text x="152" y="169" fill="#ffffff" font-family="Arial, sans-serif" font-size="23" font-weight="800" text-anchor="middle">JM</text>
+  <text x="120" y="306" fill="#17302d" font-family="Arial, sans-serif" font-size="70" font-weight="700">Jenny Ma</text>
+  <text x="120" y="385" fill="#3e5954" font-family="Arial, sans-serif" font-size="34">AI Infra · Research · Engineering Notes</text>
+  <circle cx="1010" cy="180" r="42" fill="#e2f3ec"/>
+  <circle cx="1010" cy="180" r="14" fill="#087b69"/>
 </svg>

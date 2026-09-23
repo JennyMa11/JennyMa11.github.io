@@ -166,7 +166,7 @@ def shell(title, description, body, pages, active, toc="", page_class=""):
   <title>{e(title)} · Infra Notes</title>
   <link rel="stylesheet" href="assets/pygments.css">
   <link rel="stylesheet" href="assets/style.css">
-  <script>try{{document.documentElement.dataset.theme=localStorage.getItem("infra-theme")||"light"}}catch(e){{}}</script>
+  <script>try{{const saved=localStorage.getItem("theme");document.documentElement.dataset.theme=saved||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}}catch(e){{}}</script>
 </head>
 <body class="{page_class}">
   <div id="progress" aria-hidden="true"></div>

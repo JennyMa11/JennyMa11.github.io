@@ -10,11 +10,11 @@ const isActive = (href: string) => {
 };
 ---
 
-<header class="sticky top-0 z-40 border-b border-border bg-canvas/90 backdrop-blur-xl">
-  <div class="container-page flex min-h-16 items-center justify-between gap-4">
-    <a href="/" class="focus-ring group inline-flex items-center gap-3 rounded-lg text-sm font-medium text-text no-underline">
-      <span class="grid size-8 place-items-center rounded-lg bg-text text-[11px] font-bold text-canvas">JM</span>
-      <span class="hidden sm:inline tracking-tight">{site.name}</span>
+<header class="sticky top-0 z-40 border-b border-border bg-surface/90 backdrop-blur-xl">
+  <div class="container-page flex min-h-[68px] items-center justify-between gap-4">
+    <a href="/" class="focus-ring group inline-flex items-center gap-2.5 rounded-lg text-[17px] font-bold tracking-tight text-text no-underline">
+      <span class="grid size-8 place-items-center rounded-[9px] bg-[#087b69] text-[11px] font-extrabold text-white shadow-sm">JM</span>
+      <span class="hidden sm:inline">{site.name}</span>
     </a>
 
     <nav class="hidden items-center gap-1 lg:flex" aria-label="主导航">
@@ -24,10 +24,10 @@ const isActive = (href: string) => {
             href={item.href}
             aria-current={isActive(item.href) ? "page" : undefined}
             class:list={[
-              "focus-ring rounded-lg px-3.5 py-2 text-sm no-underline transition duration-200",
+              "focus-ring rounded-lg px-3 py-2 text-[13px] no-underline transition duration-200",
               isActive(item.href)
-                ? "bg-surface-muted font-medium text-text"
-                : "text-text-muted hover:text-text"
+                ? "bg-accent-soft font-semibold text-accent-strong"
+                : "text-text-muted hover:bg-surface-muted hover:text-text"
             ]}
           >
             {item.label}
@@ -65,8 +65,8 @@ const isActive = (href: string) => {
                 class:list={[
                   "focus-ring block min-h-11 rounded-lg px-3.5 py-3 text-sm no-underline transition-colors",
                   isActive(item.href)
-                    ? "bg-surface-muted font-medium text-text"
-                    : "text-text-muted hover:text-text"
+                ? "bg-accent-soft font-semibold text-accent-strong"
+                : "text-text-muted hover:bg-surface-muted hover:text-text"
                 ]}
               >
                 {item.label}

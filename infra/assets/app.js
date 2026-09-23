@@ -16,7 +16,7 @@ function syncTheme() {
 syncTheme();
 themeButton.addEventListener("click", () => {
   root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
-  try { localStorage.setItem("infra-theme", root.dataset.theme); } catch (_) { /* Private browsing. */ }
+  try { localStorage.setItem("theme", root.dataset.theme); } catch (_) { /* Private browsing. */ }
   syncTheme();
 });
 

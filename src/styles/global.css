@@ -4,42 +4,41 @@
 
 :root {
   color-scheme: light;
-  /* Claude warm parchment palette */
-  --color-canvas: 245 244 237;          /* #f5f4ed — parchment */
-  --color-surface: 250 249 245;         /* #faf9f5 — ivory */
-  --color-surface-raised: 255 255 255;  /* pure white for elevated cards */
-  --color-surface-muted: 232 230 220;   /* #e8e6dc — warm sand */
-  --color-border: 240 238 230;          /* #f0eee6 — border cream */
-  --color-border-strong: 226 224 215;   /* #e2e0d7 — visible border */
-  --color-text: 20 20 19;               /* #141413 — near black */
-  --color-text-muted: 94 93 89;         /* #5e5d59 — olive gray */
-  --color-text-subtle: 135 134 127;     /* #87867f — stone gray */
-  --color-accent: 201 100 66;           /* #c96442 — terracotta */
-  --color-accent-strong: 185 85 52;     /* #b95534 — deeper terracotta */
-  --color-accent-soft: 245 230 224;     /* #f5e6e0 — soft terracotta */
-  --color-code-surface: 28 28 26;       /* warm dark for code blocks */
+  --color-canvas: 248 250 248;
+  --color-surface: 255 255 255;
+  --color-surface-raised: 255 255 255;
+  --color-surface-muted: 241 246 243;
+  --color-border: 220 232 225;
+  --color-border-strong: 190 211 199;
+  --color-text: 23 48 45;
+  --color-text-muted: 62 89 84;
+  --color-text-subtle: 113 132 126;
+  --color-accent: 8 123 105;
+  --color-accent-strong: 7 95 83;
+  --color-accent-soft: 226 243 236;
+  --color-code-surface: 22 38 35;
   --page-x: clamp(1.5rem, 3vw, 2rem);
-  --shadow-whisper: 0 4px 24px rgba(0, 0, 0, 0.05);
-  --shadow-ring: 0 0 0 1px rgba(209, 207, 197, 1);
+  --shadow-whisper: 0 18px 60px rgba(20, 59, 50, 0.08);
+  --shadow-ring: 0 0 0 1px rgba(190, 211, 199, 1);
 }
 
 :root.dark {
   color-scheme: dark;
-  --color-canvas: 20 20 19;             /* #141413 */
-  --color-surface: 30 30 28;            /* #1e1e1c */
-  --color-surface-raised: 38 38 36;     /* #262624 */
-  --color-surface-muted: 48 48 46;      /* #30302e */
-  --color-border: 48 48 46;             /* #30302e */
-  --color-border-strong: 61 61 58;      /* #3d3d3a */
-  --color-text: 232 230 220;            /* #e8e6dc — parchment inverted */
-  --color-text-muted: 176 174 165;      /* #b0aea5 — warm silver */
-  --color-text-subtle: 135 134 127;     /* #87867f — muted warm */
-  --color-accent: 201 100 66;           /* #c96442 — terracotta unchanged */
-  --color-accent-strong: 217 119 87;    /* #d97757 — coral accent */
-  --color-accent-soft: 60 35 25;        /* dark terracotta soft */
-  --color-code-surface: 14 14 13;       /* deep dark */
-  --shadow-whisper: 0 4px 24px rgba(0, 0, 0, 0.2);
-  --shadow-ring: 0 0 0 1px rgba(61, 61, 58, 1);
+  --color-canvas: 16 28 26;
+  --color-surface: 24 38 35;
+  --color-surface-raised: 30 48 43;
+  --color-surface-muted: 30 48 43;
+  --color-border: 48 69 61;
+  --color-border-strong: 65 96 82;
+  --color-text: 232 241 234;
+  --color-text-muted: 181 201 191;
+  --color-text-subtle: 142 170 160;
+  --color-accent: 105 208 177;
+  --color-accent-strong: 139 224 195;
+  --color-accent-soft: 35 68 57;
+  --color-code-surface: 11 23 20;
+  --shadow-whisper: 0 20px 70px rgba(0, 0, 0, 0.2);
+  --shadow-ring: 0 0 0 1px rgba(65, 96, 82, 1);
 }
 
 html {
@@ -84,12 +83,11 @@ pre code {
 }
 
 .content :where(h2, h3, h4) {
-  @apply scroll-mt-24 font-medium tracking-normal text-text;
-  font-family: 'Playfair Display', Georgia, 'Noto Serif SC', serif;
+  @apply scroll-mt-24 font-semibold tracking-tight text-text;
 }
 
 .content h2 {
-  @apply mb-5 mt-14 border-t border-border pt-8 text-2xl;
+  @apply mb-5 mt-14 border-b border-border pb-3 text-2xl;
 }
 
 .content h3 {
@@ -151,7 +149,7 @@ pre code {
   }
 
   .surface-card-interactive {
-    @apply surface-card hover:-translate-y-0.5 hover:border-border-strong;
+    @apply surface-card hover:-translate-y-0.5 hover:border-accent;
     box-shadow: none;
   }
   .surface-card-interactive:hover {
@@ -159,7 +157,7 @@ pre code {
   }
 
   .section-kicker {
-    @apply text-xs font-medium uppercase tracking-[0.2em] text-text-subtle;
+    @apply text-[11px] font-bold uppercase tracking-[0.14em] text-accent;
   }
 
   .text-link {
@@ -170,16 +168,15 @@ pre code {
     @apply outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-canvas;
   }
 
-  /* Claude-style ring shadow for interactive elements */
   .ring-shadow {
     box-shadow: var(--shadow-ring);
   }
   .ring-shadow:hover {
-    box-shadow: 0 0 0 1px rgba(209, 207, 197, 0.8), var(--shadow-whisper);
+    box-shadow: 0 0 0 1px rgba(190, 211, 199, 0.8), var(--shadow-whisper);
   }
 
   .dark .ring-shadow:hover {
-    box-shadow: 0 0 0 1px rgba(61, 61, 58, 0.8), var(--shadow-whisper);
+    box-shadow: 0 0 0 1px rgba(65, 96, 82, 0.8), var(--shadow-whisper);
   }
 }
 
