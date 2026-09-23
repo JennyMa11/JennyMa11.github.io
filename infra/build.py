@@ -22,16 +22,24 @@ EXTENSION_CONFIG = {
 }
 
 CHAPTER_DESCS = {
-    0: "四层技术地图、核心指标与推理瓶颈",
-    1: "Prefill、Decode、KV Cache 与显存计算",
-    2: "量化、注意力结构与模型压缩",
-    3: "FlashAttention、PagedAttention 与 GPU 算子",
-    4: "CUDA Graph、编译优化与异步执行",
-    5: "连续批处理、缓存、并行与 PD 分离",
-    6: "KV Cache 的开销、设计与缩减方法",
-    7: "MoE Router、专家选择与系统挑战",
-    8: "Draft-then-Verify 与接受采样",
-    9: "分层结论与高频面试问题",
+    0: "一条请求的时间、字节与状态账本",
+    1: "SM、Warp、Block、存储层次与占用率",
+    2: "CUDA 索引、访存、归约、扫描与 Softmax",
+    3: "GEMV/GEMM、Tensor Core、Triton 与扩展",
+    4: "RMSNorm、RoPE、MRoPE 与算子融合",
+    5: "GQA/MLA、在线 Softmax 与 FlashAttention",
+    6: "KV 块分配、分页寻址与前缀复用",
+    7: "Prefill/Decode 单请求生成与显存账本",
+    8: "Token/KV 双预算、分块预填充与状态机",
+    9: "FP8/INT8/INT4、量化校验与投机验证",
+    10: "Stream、Event、CUDA Graph 与执行重叠",
+    11: "TP/PP/EP、NCCL、MoE 与 PD 分离",
+    12: "vLLM、SGLang、TensorRT-LLM 与 llama.cpp",
+    13: "Roofline、Nsight、Warp Stall 与定位流程",
+    14: "逐层逐 Token 对比与第一处分歧定位",
+    15: "CUDA、Kernel、Serving 与分布式故障模式",
+    16: "从 API 到最终 Token 的完整工程复盘",
+    17: "解释、实现和调试能力验收",
 }
 
 
@@ -96,6 +104,8 @@ def load_pages():
     ]
     if not starts:
         raise ValueError("Handbook has no chapter headings")
+    preface = "\n".join(lines[:starts[0]])
+    preface = re.sub(r"^# .+\n", "", preface, count=1)
     pages = []
     for index, start in enumerate(starts):
         end = starts[index + 1] if index + 1 < len(starts) else len(lines)
@@ -104,9 +114,10 @@ def load_pages():
         number = int(match.group(1)) if match else None
         url = f"ch{number:02d}.html" if number is not None else "appendix.html"
         desc = CHAPTER_DESCS.get(number, "术语与补充资料")
-        pages.append(make_page(
-            url, "知识手册", title, desc, "\n".join(lines[start + 1:end]), number
-        ))
+        chapter_source = "\n".join(lines[start + 1:end])
+        if number == 0 and preface.strip():
+            chapter_source = preface + "\n\n" + chapter_source
+        pages.append(make_page(url, "知识手册", title, desc, chapter_source, number))
 
     extras = [
         ("interview_qa_zh.md", "项目实测", "qa.html", "nano-vLLM 项目实测与面试问答"),
@@ -173,7 +184,7 @@ def shell(title, description, body, pages, active, toc="", page_class=""):
   <header class="topbar">
     <button class="icon-button menu-button" id="menu-button" aria-label="打开目录" aria-expanded="false" aria-controls="sidebar">☰</button>
     <a class="brand" href="index.html"><span class="brand-mark">I<span>·</span></span><span>Infra<span class="brand-light"> Notes</span></span></a>
-    <span class="topbar-divider"></span><span class="topbar-context">推理系统学习手册</span>
+    <span class="topbar-divider"></span><span class="topbar-context">AI Infra 工程实践指南</span>
     <a class="back-link" href="/">← 返回主博客</a>
     <div class="topbar-actions">
       <div class="searchbox" id="searchbox">
@@ -240,10 +251,10 @@ def render_home(pages):
     chapters = [page for page in pages if page["number"] is not None]
     extras = [page for page in pages if page["group"] != "知识手册"]
     routes = [
-        ("01", "建立地图", "先看推理全局，再理解一次请求的生命周期。", "ch00.html", "第 0–1 章", "route-map"),
-        ("02", "深入优化", "从量化、注意力算子到编译执行，逐层寻找瓶颈。", "ch02.html", "第 2–4 章", "route-kernel"),
-        ("03", "进入系统", "理解调度、KV Cache、MoE 与投机解码。", "ch05.html", "第 5–8 章", "route-system"),
-        ("04", "回顾与实战", "用速查表和项目问答巩固知识。", "ch09.html", "第 9 章 + 项目实测", "route-practice"),
+        ("01", "硬件与算子", "从 GPU 执行模型写到 GEMM、Softmax 和 Triton。", "ch01.html", "第 1–3 章", "route-map"),
+        ("02", "模型与缓存", "实现 Transformer 算子、Attention 和分页 KV。", "ch04.html", "第 4–7 章", "route-kernel"),
+        ("03", "服务与分布式", "追踪调度、量化、运行时和多卡通信。", "ch08.html", "第 8–12 章", "route-system"),
+        ("04", "测量与排障", "从 Profiling、逐层比对到完整请求复盘。", "ch13.html", "第 13–17 章", "route-practice"),
     ]
     route_cards = "".join(
         f'<a class="route-card {css}" href="{url}"><span class="route-index">{number} / {label}</span>'
@@ -268,22 +279,22 @@ def render_home(pages):
       <div class="home-wrap">
         <section class="home-hero">
           <div class="hero-copy"><span class="hero-eyebrow"><span class="eyebrow-line"></span> AI INFRA / LEARNING NOTES</span>
-            <h1>把复杂的推理系统，<br><em>讲清楚。</em></h1>
-            <p>从 GPU 原理到服务架构，沿着「原理 → 实现 → 追问」的路径，系统理解 LLM 推理加速。</p>
+            <h1>从 GPU Kernel，<br><em>走到推理系统。</em></h1>
+            <p>沿着「原理 → 图解 → 实现 → 源码 → Profiling → Debug」的路径，学习 AI Infra 的完整运行链路。</p>
             <div class="hero-actions"><a class="button button-primary" href="ch00.html">开始学习 <span aria-hidden="true">↗</span></a><a class="button button-secondary" href="#chapters">浏览章节 <span aria-hidden="true">↓</span></a></div>
           </div>
-          <div class="hero-visual" aria-label="模型层、算子层、执行层和系统层学习地图">
+          <div class="hero-visual" aria-label="硬件层、算子层、服务层和诊断层学习地图">
             <div class="visual-header"><span>INFERENCE STACK</span><span class="visual-pulse"></span></div>
-            <div class="visual-layers"><div><span>04</span><strong>系统层</strong><small>调度 · 缓存 · 并行</small></div>
-              <div><span>03</span><strong>执行层</strong><small>编译 · Graph · Overlap</small></div>
-              <div><span>02</span><strong>算子层</strong><small>Attention · Kernel</small></div>
-              <div><span>01</span><strong>模型层</strong><small>量化 · 架构优化</small></div></div>
+            <div class="visual-layers"><div><span>04</span><strong>诊断层</strong><small>Profiling · Debug · Bug</small></div>
+              <div><span>03</span><strong>服务层</strong><small>调度 · 缓存 · 并行</small></div>
+              <div><span>02</span><strong>算子层</strong><small>Attention · GEMM · Kernel</small></div>
+              <div><span>01</span><strong>硬件层</strong><small>GPU · CUDA · Memory</small></div></div>
             <div class="visual-footer"><span>从原理到实现</span><span>↓</span></div>
           </div>
         </section>
         <div class="home-stats"><div><strong>{len(chapters):02d}</strong><span>系统章节</span></div><div><strong>{len(list((ROOT / "figures").glob("*.png"))):02d}</strong><span>原理配图</span></div><div><strong>04</strong><span>学习阶段</span></div></div>
         <section class="home-section" id="roadmap"><div class="section-heading"><span>01 / LEARNING PATH</span><h2>从哪里开始？</h2><p>按层次推进，也可以直接跳到你关心的主题。</p></div><div class="route-grid">{route_cards}</div></section>
-        <section class="home-section" id="chapters"><div class="section-heading"><span>02 / HANDBOOK</span><h2>推理加速知识手册</h2><p>十个章节，串起模型、算子、执行与系统层的关键概念。</p></div><div class="chapter-grid">{chapter_cards}</div></section>
+        <section class="home-section" id="chapters"><div class="section-heading"><span>02 / HANDBOOK</span><h2>AI Infra 工程实践指南</h2><p>十八章沿同一条请求链路，连接硬件、算子、服务、性能与调试。</p></div><div class="chapter-grid">{chapter_cards}</div></section>
         <section class="home-section" id="more"><div class="section-heading"><span>03 / MORE TO EXPLORE</span><h2>继续探索</h2><p>项目实践与技术写作笔记。</p></div><div class="extra-grid">{extra_cards}</div></section>
       </div>'''
     return shell("首页", "系统学习 LLM 推理加速的中文笔记", body, pages, "index.html", page_class="home-page")
@@ -304,6 +315,10 @@ def build():
     OUT.mkdir(parents=True)
     write_assets()
     shutil.copytree(ROOT / "figures", OUT / "figures", ignore=shutil.ignore_patterns("*.svg"))
+    shutil.copytree(
+        ROOT / "examples", OUT / "examples",
+        ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+    )
     (OUT / "index.html").write_text(render_home(pages), encoding="utf-8")
     for page in pages:
         (OUT / page["url"]).write_text(render_article(page, pages), encoding="utf-8")

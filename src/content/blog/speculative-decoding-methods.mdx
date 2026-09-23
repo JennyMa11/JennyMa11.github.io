@@ -63,4 +63,4 @@ $$E[\text{输出数}] = \sum_{k=0}^{\gamma}\alpha^k = \frac{1-\alpha^{\gamma+1}}
 
 而**被接受的 Draft Token 数**是 $\sum_{k=1}^{\gamma}\alpha^k$，两者不要混用。例如 $\alpha=0.8,\gamma=4$ 时，前者约为 3.36，后者约为 2.36。这只是恒定接受率的简化估计。实际加速还要比较 `Draft 耗时 + Target 验证耗时 + 调度/构树开销` 与逐 Token 的 Target 耗时；长候选、大批量和复杂树未必更快。部署时应同时记录**接受长度分布、每轮延迟、端到端吞吐、显存占用**，按具体模型与负载调节 $\gamma$ 或树宽。
 
-延伸阅读：[Infra 手册第 8 章](/infra/ch08.html)提供速查版流程与对照表。
+延伸阅读：[Infra 手册第 9 章](/infra/ch09.html)提供速查版流程与对照表。

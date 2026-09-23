@@ -16,10 +16,10 @@ const [posts, projects] = await Promise.all([
 const recentPosts = posts.slice(0, 3);
 
 const layers = [
-  { number: "04", title: "系统层", detail: "调度 · 缓存 · 并行", href: "/infra/ch05.html" },
-  { number: "03", title: "执行层", detail: "编译 · Graph · Overlap", href: "/infra/ch04.html" },
-  { number: "02", title: "算子层", detail: "Attention · Kernel", href: "/infra/ch03.html" },
-  { number: "01", title: "模型层", detail: "量化 · 架构优化", href: "/infra/ch02.html" }
+  { number: "04", title: "诊断层", detail: "Profiling · Debug · Bug", href: "/infra/ch13.html" },
+  { number: "03", title: "服务层", detail: "调度 · 缓存 · 并行", href: "/infra/ch08.html" },
+  { number: "02", title: "算子层", detail: "Attention · GEMM · Kernel", href: "/infra/ch03.html" },
+  { number: "01", title: "硬件层", detail: "GPU · CUDA · Memory", href: "/infra/ch01.html" }
 ];
 ---
 
@@ -39,12 +39,12 @@ const layers = [
       </div>
     </div>
 
-    <aside class="rounded-2xl border border-border-strong bg-accent-soft/65 p-5 shadow-soft sm:p-6" aria-label="推理加速知识地图">
+    <aside class="rounded-2xl border border-border-strong bg-accent-soft/65 p-5 shadow-soft sm:p-6" aria-label="AI Infra 工程学习地图">
       <div class="flex items-center justify-between text-[11px] font-bold tracking-[0.14em] text-accent-strong">
         <span>INFERENCE STACK</span>
         <span class="size-2 rounded-full bg-accent"></span>
       </div>
-      <p class="mt-4 text-lg font-bold tracking-tight text-text">沿四层架构，理解推理加速</p>
+      <p class="mt-4 text-lg font-bold tracking-tight text-text">从硬件到诊断，理解推理系统</p>
       <div class="mt-5 grid gap-2">
         {layers.map((layer) => (
           <a href={layer.href} class="focus-ring grid grid-cols-[2rem_1fr_auto] items-center gap-3 rounded-lg border border-border bg-surface px-4 py-3 no-underline transition-all hover:-translate-y-0.5 hover:border-accent hover:shadow-soft">
