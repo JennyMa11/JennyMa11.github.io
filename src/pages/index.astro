@@ -30,6 +30,7 @@ const latestPost = posts[0];
       </p>
       <div class="mt-10 flex flex-wrap gap-3">
         <ButtonLink href="/blog/" variant="primary">Read Posts</ButtonLink>
+        <ButtonLink href="/infra/">Explore Infra Notes</ButtonLink>
         <ButtonLink href="/projects/">View Projects</ButtonLink>
       </div>
     </div>
@@ -54,6 +55,41 @@ const latestPost = posts[0];
         <div>
           <p class="text-2xl font-medium text-text">Static</p>
           <p class="mt-1 text-text-subtle">Deployment</p>
+        </div>
+      </div>
+    </div>
+  </Container>
+
+  <!-- Infra knowledge base -->
+  <Container as="section" class="pb-20">
+    <div class="surface-card overflow-hidden">
+      <div class="grid lg:grid-cols-[1.1fr_0.9fr]">
+        <div class="p-8 sm:p-10">
+          <p class="section-kicker mb-4 text-accent">Infra Knowledge Base</p>
+          <h2 class="text-2xl font-medium tracking-tight text-text sm:text-3xl" style="font-family: 'Playfair Display', 'Noto Serif SC', Georgia, serif;">
+            LLM 推理加速知识手册
+          </h2>
+          <p class="mt-5 max-w-xl leading-8 text-text-muted">
+            从 GPU 原理到推理服务架构，用原理、示意代码和面试追问串起模型、算子、执行与系统四层知识。
+          </p>
+          <div class="mt-7 flex flex-wrap items-center gap-5">
+            <ButtonLink href="/infra/" variant="primary">进入 Infra 学习笔记 →</ButtonLink>
+            <span class="text-xs text-text-subtle">10 章 · 21 张配图 · 全文搜索</span>
+          </div>
+        </div>
+        <div class="border-t border-border bg-surface-muted/40 p-8 lg:border-l lg:border-t-0 sm:p-10">
+          <p class="section-kicker mb-5">建议阅读路径</p>
+          <nav class="grid gap-3" aria-label="Infra 学习路线">
+            <a href="/infra/ch00.html" class="focus-ring flex items-center gap-4 rounded-lg border border-border bg-surface px-4 py-3 text-sm no-underline transition-colors hover:border-accent">
+              <span class="font-mono text-xs text-accent">01</span><span class="font-medium text-text">基础与全局地图</span><span class="ml-auto text-text-subtle">↗</span>
+            </a>
+            <a href="/infra/ch02.html" class="focus-ring flex items-center gap-4 rounded-lg border border-border bg-surface px-4 py-3 text-sm no-underline transition-colors hover:border-accent">
+              <span class="font-mono text-xs text-accent">02</span><span class="font-medium text-text">模型、算子与执行优化</span><span class="ml-auto text-text-subtle">↗</span>
+            </a>
+            <a href="/infra/ch05.html" class="focus-ring flex items-center gap-4 rounded-lg border border-border bg-surface px-4 py-3 text-sm no-underline transition-colors hover:border-accent">
+              <span class="font-mono text-xs text-accent">03</span><span class="font-medium text-text">推理系统与专题</span><span class="ml-auto text-text-subtle">↗</span>
+            </a>
+          </nav>
         </div>
       </div>
     </div>

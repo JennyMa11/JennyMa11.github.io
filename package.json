@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
+    "dev": "npm run build:infra && astro dev",
+    "build": "npm run build:infra && astro build",
+    "build:infra": "python3 infra/build.py",
     "preview": "astro preview",
     "astro": "astro"
   },

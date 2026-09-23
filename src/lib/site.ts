@@ -8,6 +8,7 @@ export const site = {
   nav: [
     { href: "/", label: "Home" },
     { href: "/blog/", label: "Blog" },
+    { href: "/infra/", label: "Infra" },
     { href: "/archive/", label: "Archive" },
     { href: "/tags/", label: "Tags" },
     { href: "/projects/", label: "Projects" },

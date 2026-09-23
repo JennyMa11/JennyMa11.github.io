@@ -17,7 +17,7 @@ const isActive = (href: string) => {
       <span class="hidden sm:inline tracking-tight">{site.name}</span>
     </a>
 
-    <nav class="hidden items-center gap-1 md:flex" aria-label="主导航">
+    <nav class="hidden items-center gap-1 lg:flex" aria-label="主导航">
       {
         site.nav.map((item) => (
           <a
@@ -50,7 +50,7 @@ const isActive = (href: string) => {
       </a>
       <ThemeToggle />
 
-      <details class="relative md:hidden">
+      <details class="relative lg:hidden">
         <summary class="focus-ring grid size-11 cursor-pointer list-none place-items-center rounded-lg border border-border bg-surface text-text-muted transition hover:border-border-strong hover:text-text" aria-label="打开菜单">
           <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M4 7h16M4 12h16M4 17h16"/>
