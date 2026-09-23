@@ -1,0 +1,66 @@
+---
+title: "投机解码的五条路线：从小模型到 Prompt Lookup"
+description: "用结构图拆解 Draft Model、MTP、EAGLE、Medusa 与 N-gram：候选如何产生、如何验证，以及什么时候值得用。"
+pubDate: 2026-09-23
+tags: ["AI Infra", "LLM Inference", "Speculative Decoding"]
+draft: false
+featured: true
+---
+
+大模型逐 Token 解码时，下一步必须等上一步完成。投机解码先用便宜的方法猜出一串候选，再让目标模型（Target）在一次前向中计算这些位置的分布。它节省的是**昂贵目标模型的串行调用次数**；候选仍须按顺序验证，不能因为一次前向算出了所有位置就全部接受。
+
+<a href="/diagrams/speculative/verify-loop.svg" target="_blank" rel="noopener noreferrer" aria-label="放大查看投机解码验证流程图"><img className="diagram-wide" src="/diagrams/speculative/verify-loop.svg" alt="投机解码的生成、验证与回退流程" loading="lazy" /></a>
+
+*图 1：一次 Target 前向并行算出候选位置的概率；遇到首个拒绝位置，就丢弃其后的候选。*
+
+## 先弄清“无损”验证
+
+设目标模型在某位置的采样分布为 $p$，Draft 分布为 $q$，Draft 采到 $x$。精确采样以 $\min(1,p(x)/q(x))$ 的概率接受它；若拒绝，就从归一化后的 $[p-q]_+$ 中采一个修正 Token。若 $\gamma$ 个候选全部通过，还可从 Target 的下一位置再采一个 Token。这样每一步的结果服从 $p$，前提是使用**实际生效的采样分布**，包括温度、top-k/top-p 等处理。贪心解码则按 Target 的逐位置最优 Token 检查候选前缀。[经典投机解码论文](https://proceedings.mlr.press/v202/leviathan23a.html)给出了精确采样的证明。
+
+五条路线的主要区别在于 **Draft 从哪里来**。图中的箭头表示生成候选的路径；所有路线最后都回到 Target 验证。
+
+<a href="/diagrams/speculative/five-draft-sources.svg" target="_blank" rel="noopener noreferrer" aria-label="放大查看五种投机解码方法结构图"><img className="diagram-wide" src="/diagrams/speculative/five-draft-sources.svg" alt="五种投机解码方法的候选生成结构" loading="lazy" /></a>
+
+*图 2：从上到下分别是独立小模型、模型内 MTP、隐藏特征 Draft、多个预测头和上下文检索。*
+
+## 1. 独立 Draft Model：用小模型先跑几步
+
+一个更小的自回归模型连续生成 $\gamma$ 个 Token，并保留每步的 $q_i$。Target 随后对整段候选做一次前向，逐个接受或修正。实现上要管理两套模型与 KV Cache；小模型若太慢，或与 Target 差异太大，收益就会被 Draft 成本和低接受率抵消。它适合已有相容的小模型、又能承担额外显存的部署。[Leviathan 等人的原论文](https://proceedings.mlr.press/v202/leviathan23a.html)是这一路线的起点。
+
+## 2. MTP：把未来预测模块接进模型
+
+Multi-Token Prediction（MTP）在训练时为未来位置增加预测目标。以 DeepSeek-V3 为例，主干表示送入连续的 MTP 模块，每个模块结合上一位置的预测 Token 和特征，继续给出更远位置的候选；推理时这些模块可用来投机，Target 主干仍负责验收。它复用主模型表示，但**需要模型本身提供并训练 MTP 模块**，并非任意模型开启一个开关就有此能力。[DeepSeek-V3 技术报告](https://arxiv.org/abs/2412.19437)给出了模块设计。
+
+## 3. EAGLE：在隐藏特征空间里递推
+
+EAGLE 不直接训练一个完整的小语言模型；轻量 Draft 网络从 Target 的中间层特征出发，结合已知 Token 信息预测下一步特征，再经词表投影得到候选 Token。它把新特征和新 Token 继续喂回 Draft 网络，形成递归链，最后由 Target 验证。相比多个互不相依的未来位置预测，这条链能显式利用刚生成的候选；代价是要训练和部署额外的特征预测网络，并处理特征/KV 的对齐。[EAGLE 论文](https://arxiv.org/abs/2401.15077)详细说明了这一设计。
+
+## 4. Medusa：多个 Head 并行，候选组成树
+
+Medusa 在主模型表示上增加多个预测 Head，分别给出后续不同位置的候选。每个位置可取多个高概率 Token，组合成共享前缀的候选树。Tree Attention 让一次 Target 前向检查多条路径，同时用掩码防止兄弟分支互相“偷看”。它避免独立 Draft 模型，却需要训练 Head、构树和树形注意力支持；树越宽，验证开销也越高。[Medusa 论文](https://arxiv.org/abs/2401.10774)区分了可保持目标分布的验收与以质量换接受率的 typical acceptance，不能把两者都称作严格无损。
+
+<a href="/diagrams/speculative/medusa-tree.svg" target="_blank" rel="noopener noreferrer" aria-label="放大查看 Medusa 候选树结构图"><img className="diagram-wide" src="/diagrams/speculative/medusa-tree.svg" alt="Medusa 多预测头与树形验证结构" loading="lazy" /></a>
+
+*图 3：不同位置的候选形成分叉；Target 检查路径，只提交从根节点起连续通过的前缀。*
+
+## 5. Prompt Lookup / N-gram：直接复制上下文片段
+
+从当前输出末尾取一段 N-gram，在 Prompt 或已生成历史中找相同片段，把它后面的 Token 当作候选。例如上下文已有“PagedAttention 管理 KV Cache”，生成到“PagedAttention”时，可以先猜后续词。它没有额外模型权重，特别适合代码编辑、引用和基于材料的回答；上下文少、措辞新颖时则可能找不到可用片段。候选仍交给 Target 验证，匹配成功本身不代表被接受。[Prompt Lookup Decoding 原始实现](https://github.com/apoorvumang/prompt-lookup-decoding)展示了 N-gram 匹配流程。
+
+## 怎么选，以及怎么算收益
+
+| 方法 | 额外准备 | 候选形态 | 优先考虑的场景 |
+| --- | --- | --- | --- |
+| 小 Draft Model | 相容的小模型和额外显存 | 串行单路径 | 通用模型服务，能承担第二套模型 |
+| MTP | 已训练的 MTP 模块 | 模块递推路径 | 原模型原生支持 MTP |
+| EAGLE | 特征 Draft 网络 | 特征递推路径 | 可训练辅助模块，追求较好的候选质量 |
+| Medusa | 多个预测 Head、树形验证 | 多分支树 | 可改模型结构和推理内核 |
+| Prompt Lookup | N-gram 检索 | 复制片段 | 输入输出重复度高的任务 |
+
+若每个位置的条件接受率近似为常数 $\alpha$，一次投机轮次的**期望输出 Token 数**（含首个拒绝后的修正 Token，或全接受后的额外 Token）约为
+
+$$E[\text{输出数}] = \sum_{k=0}^{\gamma}\alpha^k = \frac{1-\alpha^{\gamma+1}}{1-\alpha}.$$
+
+而**被接受的 Draft Token 数**是 $\sum_{k=1}^{\gamma}\alpha^k$，两者不要混用。例如 $\alpha=0.8,\gamma=4$ 时，前者约为 3.36，后者约为 2.36。这只是恒定接受率的简化估计。实际加速还要比较 `Draft 耗时 + Target 验证耗时 + 调度/构树开销` 与逐 Token 的 Target 耗时；长候选、大批量和复杂树未必更快。部署时应同时记录**接受长度分布、每轮延迟、端到端吞吐、显存占用**，按具体模型与负载调节 $\gamma$ 或树宽。
+
+延伸阅读：[Infra 手册第 8 章](/infra/ch08.html)提供速查版流程与对照表。

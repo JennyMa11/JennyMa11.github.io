@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 690" role="img" aria-labelledby="title desc">
+  <title id="title">五类投机解码 Draft 来源与结构</title>
+  <desc id="desc">独立小模型、MTP、EAGLE、Medusa、Prompt Lookup 各自生成候选，然后共同进入 Target 验证。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#678079"/></marker>
+    <style>text{font-family:Inter,"PingFang SC","Microsoft YaHei",sans-serif;fill:#17302d}.head{font-size:17px;font-weight:700}.detail{font-size:14px;fill:#567069}.boxtext{font-size:16px;font-weight:600}.arrow{stroke:#678079;stroke-width:2;fill:none;marker-end:url(#arrow)}</style>
+  </defs>
+  <rect width="1120" height="690" rx="24" fill="#f8faf8"/>
+  <text x="38" y="47" font-size="24" font-weight="700">五种 Draft 来源，同一个验证出口</text>
+  <text x="38" y="76" class="detail">绿色：候选生成或检索　橙色：目标模型验证　箭头：数据流</text>
+  <g>
+    <rect x="30" y="98" width="1060" height="100" rx="17" fill="#fff" stroke="#dce7e0"/>
+    <text x="51" y="132" class="head">① 独立小模型</text><text x="51" y="159" class="detail">额外模型串行预测</text>
+    <rect x="260" y="119" width="171" height="57" rx="12" fill="#dcf2e8"/><text x="345" y="154" class="boxtext" text-anchor="middle">小模型 + KV</text>
+    <path d="M432 148H475" class="arrow"/>
+    <rect x="477" y="119" width="220" height="57" rx="12" fill="#e8f6ef"/><text x="587" y="154" class="boxtext" text-anchor="middle">t₁ → t₂ → t₃</text>
+    <path d="M698 148H760" class="arrow"/>
+    <rect x="763" y="119" width="278" height="57" rx="12" fill="#fff0dc"/><text x="902" y="154" class="boxtext" text-anchor="middle">Target 验证候选前缀</text>
+  </g>
+  <g>
+    <rect x="30" y="208" width="1060" height="100" rx="17" fill="#fff" stroke="#dce7e0"/>
+    <text x="51" y="242" class="head">② MTP</text><text x="51" y="269" class="detail">主模型内置预测模块</text>
+    <rect x="260" y="229" width="171" height="57" rx="12" fill="#dcf2e8"/><text x="345" y="264" class="boxtext" text-anchor="middle">主干表示 hₜ</text>
+    <path d="M432 258H475" class="arrow"/>
+    <rect x="477" y="229" width="220" height="57" rx="12" fill="#e8f6ef"/><text x="587" y="264" class="boxtext" text-anchor="middle">MTP₁ → MTP₂ …</text>
+    <path d="M698 258H760" class="arrow"/>
+    <rect x="763" y="229" width="278" height="57" rx="12" fill="#fff0dc"/><text x="902" y="264" class="boxtext" text-anchor="middle">Target 主干验证</text>
+  </g>
+  <g>
+    <rect x="30" y="318" width="1060" height="100" rx="17" fill="#fff" stroke="#dce7e0"/>
+    <text x="51" y="352" class="head">③ EAGLE</text><text x="51" y="379" class="detail">隐藏特征递推</text>
+    <rect x="260" y="339" width="171" height="57" rx="12" fill="#dcf2e8"/><text x="345" y="374" class="boxtext" text-anchor="middle">特征 + Token</text>
+    <path d="M432 368H475" class="arrow"/>
+    <rect x="477" y="339" width="220" height="57" rx="12" fill="#e8f6ef"/><text x="587" y="374" class="boxtext" text-anchor="middle">轻量特征 Draft ↻</text>
+    <path d="M698 368H760" class="arrow"/>
+    <rect x="763" y="339" width="278" height="57" rx="12" fill="#fff0dc"/><text x="902" y="374" class="boxtext" text-anchor="middle">Target 验证递推路径</text>
+  </g>
+  <g>
+    <rect x="30" y="428" width="1060" height="100" rx="17" fill="#fff" stroke="#dce7e0"/>
+    <text x="51" y="462" class="head">④ Medusa</text><text x="51" y="489" class="detail">多个位置并行预测</text>
+    <rect x="260" y="449" width="171" height="57" rx="12" fill="#dcf2e8"/><text x="345" y="484" class="boxtext" text-anchor="middle">主干表示 hₜ</text>
+    <path d="M432 478H475" class="arrow"/>
+    <rect x="477" y="449" width="220" height="57" rx="12" fill="#e8f6ef"/><text x="587" y="484" class="boxtext" text-anchor="middle">Head₁ / Head₂ / Head₃</text>
+    <path d="M698 478H760" class="arrow"/>
+    <rect x="763" y="449" width="278" height="57" rx="12" fill="#fff0dc"/><text x="902" y="484" class="boxtext" text-anchor="middle">候选树 + Tree Attention</text>
+  </g>
+  <g>
+    <rect x="30" y="538" width="1060" height="100" rx="17" fill="#fff" stroke="#dce7e0"/>
+    <text x="51" y="572" class="head">⑤ Prompt Lookup</text><text x="51" y="599" class="detail">无需额外模型权重</text>
+    <rect x="260" y="559" width="171" height="57" rx="12" fill="#dcf2e8"/><text x="345" y="594" class="boxtext" text-anchor="middle">Prompt / 历史</text>
+    <path d="M432 588H475" class="arrow"/>
+    <rect x="477" y="559" width="220" height="57" rx="12" fill="#e8f6ef"/><text x="587" y="594" class="boxtext" text-anchor="middle">N-gram 匹配并复制</text>
+    <path d="M698 588H760" class="arrow"/>
+    <rect x="763" y="559" width="278" height="57" rx="12" fill="#fff0dc"/><text x="902" y="594" class="boxtext" text-anchor="middle">Target 验证复制片段</text>
+  </g>
+  <text x="38" y="667" class="detail">图中为概念结构：具体实现的模块数量、候选长度和验收规则由模型与推理引擎决定。</text>
+</svg>

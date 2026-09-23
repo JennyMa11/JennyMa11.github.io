@@ -1,3 +1,5 @@
+@import "katex/dist/katex.min.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -110,6 +112,16 @@ pre code {
 .content img {
   @apply my-8 rounded-xl border border-border;
   box-shadow: var(--shadow-whisper);
+}
+
+@media (min-width: 1024px) {
+  .content img.diagram-wide {
+    position: relative;
+    left: 50%;
+    width: min(960px, calc(100vw - 4rem));
+    max-width: none;
+    transform: translateX(-50%);
+  }
 }
 
 .content table {

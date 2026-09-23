@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 380" role="img" aria-labelledby="title desc">
+  <title id="title">投机解码的统一验证流程</title>
+  <desc id="desc">当前上下文进入低成本 Draft，生成四个候选；Target 一次前向计算各位置分布，依次接受前缀，在首个拒绝位置修正并进入下一轮。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#4b6963"/></marker>
+    <style>
+      text{font-family:Inter,"PingFang SC","Microsoft YaHei",sans-serif;fill:#17302d} .label{font-size:19px;font-weight:700} .small{font-size:15px;fill:#4b6963} .token{font-size:22px;font-weight:700} .line{stroke:#4b6963;stroke-width:2.5;fill:none;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1120" height="380" rx="24" fill="#f8faf8"/>
+  <text x="42" y="49" font-size="24" font-weight="700">先猜一段，再由 Target 验证前缀</text>
+  <rect x="42" y="103" width="165" height="94" rx="18" fill="#e8efeb" stroke="#c8d8d0"/>
+  <text x="124" y="140" class="label" text-anchor="middle">已确定上下文</text><text x="124" y="169" class="small" text-anchor="middle">x₁ … xₜ</text>
+  <path d="M207 150H256" class="line"/>
+  <rect x="257" y="103" width="197" height="94" rx="18" fill="#dcf2e8" stroke="#9ccdbd"/>
+  <text x="355" y="140" class="label" text-anchor="middle">低成本 Draft</text><text x="355" y="169" class="small" text-anchor="middle">生成候选及 qᵢ</text>
+  <path d="M454 150H505" class="line"/>
+  <rect x="506" y="103" width="247" height="94" rx="18" fill="#fff0dc" stroke="#e7bd82"/>
+  <text x="629" y="140" class="label" text-anchor="middle">Target 一次前向</text><text x="629" y="169" class="small" text-anchor="middle">并行计算各位置 pᵢ</text>
+  <path d="M753 150H804" class="line"/>
+  <rect x="805" y="103" width="273" height="94" rx="18" fill="#e4eeff" stroke="#aebfe2"/>
+  <text x="941" y="140" class="label" text-anchor="middle">按位置依次验收</text><text x="941" y="169" class="small" text-anchor="middle">首个拒绝处修正或全接受后补采</text>
+  <text x="45" y="257" class="small">Draft 候选</text>
+  <g text-anchor="middle">
+    <rect x="170" y="222" width="74" height="65" rx="13" fill="#d4efe2" stroke="#82bfa7"/><text x="207" y="263" class="token">a</text>
+    <rect x="260" y="222" width="74" height="65" rx="13" fill="#d4efe2" stroke="#82bfa7"/><text x="297" y="263" class="token">b</text>
+    <rect x="350" y="222" width="74" height="65" rx="13" fill="#ffe4df" stroke="#e8a79c"/><text x="387" y="263" class="token">c</text>
+    <rect x="440" y="222" width="74" height="65" rx="13" fill="#ebeeee" stroke="#c6d0cc"/><text x="477" y="263" class="token">d</text>
+  </g>
+  <path d="M534 254H588" class="line"/>
+  <rect x="589" y="222" width="488" height="65" rx="14" fill="#fff" stroke="#c8d8d0"/>
+  <text x="609" y="261" font-size="18"><tspan fill="#087b69" font-weight="700">a、b 接受</tspan><tspan fill="#9e554e">  ·  c 拒绝并修正</tspan><tspan fill="#71837d">  ·  d 作废</tspan></text>
+  <text x="44" y="343" class="small">只有已接受的连续前缀进入输出；下一轮从修正后的上下文继续。</text>
+</svg>

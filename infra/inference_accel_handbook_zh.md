@@ -387,7 +387,7 @@ Intensity = FLOPs / Bytes
 # Intensity < 机器平衡点 → 访存受限（Decode）
 # Intensity > 机器平衡点 → 计算受限（Prefill、大 Batch）
 
-# 投机解码期望接受 Token 数（接受率 α、Draft 长度 γ）
+# 投机解码期望输出 Token 数（含修正或额外 Token；接受率 α、Draft 长度 γ）
 E[tokens] ≈ (1 - α^(γ+1)) / (1 - α)
 ```
 
@@ -1436,6 +1436,8 @@ MoE FFN:    x → Router → Top-K Expert → 加权求和 → y
 
 # 第 8 章 专题：投机解码
 
+想逐一看清 Draft Model、MTP、EAGLE、Medusa 与 Prompt Lookup 的结构和取舍，可阅读[投机解码的五条路线](/blog/speculative-decoding-methods/)；文内附有生成路径与树形验证结构图。
+
 ## 8.1 核心思想
 
 **速查**：先用成本更低的方法生成多个候选 Token（Draft），再由主模型**一次性并行验证**，从而减少 Decode 阶段的串行 Forward 次数。
@@ -1488,9 +1490,9 @@ if accepted < gamma:
 
 > **第 ④ 步才是「无损」的来源。** 只做 ①②③ 的话，输出分布会偏向 Draft（因为 Draft 说「是」的 token 更容易留下），必须补上「从 `max(p_target − p_draft, 0)` 归一化后的修正分布重采样」，接受的 Token 边缘分布才与目标模型完全一致。
 >
-> **期望接受数** `E = (1 − α^(γ+1)) / (1 − α)` 的实算：α=0.8、γ=4 → **3.36**；α=0.6、γ=4 → 2.31；α=0.5、γ=8 → **2.00**。最后一组最能说明问题：接受率只有 0.5 时，把 Draft 长度从 4 加到 8 也几乎不涨收益，反而多付了一倍 Draft 成本——这就是「γ 不是越大越好」的量化依据。
+> **期望输出数**（含首个拒绝后的修正 Token，或全接受后的额外 Token）`E = (1 − α^(γ+1)) / (1 − α)`：α=0.8、γ=4 → **3.36**；α=0.6、γ=4 → 2.31；α=0.5、γ=8 → **2.00**。单算被接受的 Draft Token 数，应从这里减去 1。最后一组说明：接受率只有 0.5 时，把 Draft 长度从 4 加到 8 也几乎不涨收益，反而增加 Draft 成本。
 
-**为什么正确？** 验证阶段用目标模型的概率对 Draft Token 做 **modified rejection sampling**，可以证明接受的 Token 分布与直接从目标模型采样**完全一致**——所以投机解码是**无损加速**（不改输出分布）。
+**为什么正确？** 若验证与修正采用目标模型实际生效的采样分布，并执行 **modified rejection sampling**，输出分布与直接从目标模型采样一致；近似验收模式不在此保证之内。
 
 ## 8.2 五类 Draft 来源
 
@@ -1514,7 +1516,7 @@ if accepted < gamma:
 
 ## 8.3 统一流程
 
-所有方法的后半段完全一致：
+这些方法在抽象上都遵循下面的流程；单路径与候选树的具体验收规则不同：
 
 ```text
 Draft → Verify → Accept / Reject
@@ -1547,7 +1549,7 @@ Draft → Verify → Accept / Reject
 ③ 一次 Target Forward 平均接受 Token 数
 ```
 
-**期望接受 Token 数**（接受率 α、Draft 长度 γ）：
+**期望输出 Token 数**（含修正或全接受后的额外 Token；假设每个位置的条件接受率均为 α、Draft 长度为 γ）：
 
 ```text
 E[tokens] ≈ (1 - α^(γ+1)) / (1 - α)
@@ -1569,7 +1571,7 @@ E[tokens] ≈ (1 - α^(γ+1)) / (1 - α)
 | N-gram / Lookup | 不需要 | 场景相关 | **极低** | **最低** | 代码补全、RAG |
 
 **追问：投机解码是「无损」的吗？**
-> 是。验证阶段采用 modified rejection sampling，保证接受 Token 的边缘分布与目标模型一致。所以它是**不改变输出分布**的加速手段——这是它与量化、蒸馏等「有损」手段的本质区别。
+> 在采样时使用 modified rejection sampling，并以实际生效的目标分布（含温度、top-k/top-p 等处理）验收与修正，才保证输出分布一致；贪心解码可逐位置核对 Target 的最优 Token。部分方法另有近似验收模式，例如 Medusa 的 typical acceptance，不能统称严格无损。
 
 ---
 
@@ -1590,7 +1592,7 @@ E[tokens] ≈ (1 - α^(γ+1)) / (1 - α)
 | **Prefix Cache 怎么保证正确？** | 链式哈希编码完整前缀路径 + token_ids 二次校验抗碰撞 + 必须留至少一个 Block 重算以产生 Logits。 |
 | **量化会掉精度吗？** | 分三层说：算子层（≤半个 step）、Attention 输出层（cosine 0.999+）、端到端层（接近 tie 会翻转 argmax 并被自回归放大）。必须测 PPL。 |
 | **MoE 省什么？** | 省计算（激活参数少），**不省显存**（所有 Expert 都要装）。难点是路由、负载均衡和 All-to-All 通信。 |
-| **投机解码为什么无损？** | 用 modified rejection sampling 验证，接受的 Token 分布与目标模型一致。 |
+| **投机解码何时无损？** | 用目标模型的实际采样分布做精确验收与修正时，输出分布与直接采样一致。 |
 | **PD 分离的动机？** | Prefill 计算密集、Decode 访存密集，混跑互相干扰；分离后各自最优，代价是 KV 跨节点传输。 |
 | **TP 和 PP 怎么选？** | TP 通信量大、延迟低，放机内（NVLink）；PP 通信量小、有 Bubble，跨机。常用 3D 并行组合。 |
 
@@ -1637,7 +1639,7 @@ E[tokens] ≈ (1 - α^(γ+1)) / (1 - α)
 | ❌ CUDA Graph 提升 GPU 计算速度 | ✅ 只减少 CPU Launch/调度开销 |
 | ❌ KV 量化省显存 | ✅ 显存按剩余定容，涨的是**可用块数/上下文容量** |
 | ❌ MoE 省显存 | ✅ 省计算；所有 Expert 都要驻留显存 |
-| ❌ 投机解码有损 | ✅ 无损，输出分布与目标模型一致 |
+| ❌ 投机解码必然有损 | ✅ 精确验收可保持目标分布；近似验收另当别论 |
 | ❌ Prefix Cache 可以复用最后一个满块 | ✅ 必须留至少一个 Block 重算，否则没有 Logits |
 | ❌ 量化后 attention 数值接近就代表质量无损 | ✅ 需测 PPL / 任务指标，exact token agreement 不是语言质量指标 |
 | ❌ 静态 Batching 就够了 | ✅ 静态 Batching 会因请求长度不一浪费大量算力 |

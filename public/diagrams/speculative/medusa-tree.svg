@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 430" role="img" aria-labelledby="title desc">
+  <title id="title">Medusa 多头候选树与目标模型验证</title>
+  <desc id="desc">主干表示进入三个预测 Head，输出不同未来位置的候选并组成共享前缀的树；目标模型用 Tree Attention 并行验证多条路径，只提交连续通过的前缀。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#678079"/></marker>
+    <style>text{font-family:Inter,"PingFang SC","Microsoft YaHei",sans-serif;fill:#17302d}.label{font-size:18px;font-weight:700}.small{font-size:14px;fill:#567069}.node{font-size:18px;font-weight:700}.edge{stroke:#92b9a9;stroke-width:2.5;fill:none}.muted{stroke:#ccd6d1;stroke-width:2;fill:none}.arrow{stroke:#678079;stroke-width:2.2;fill:none;marker-end:url(#arrow)}</style>
+  </defs>
+  <rect width="1120" height="430" rx="24" fill="#f8faf8"/>
+  <text x="40" y="48" font-size="24" font-weight="700">Medusa：并行预测 → 共享前缀的候选树 → 树形验证</text>
+  <rect x="40" y="120" width="170" height="79" rx="16" fill="#e8efeb" stroke="#c8d8d0"/><text x="125" y="153" class="label" text-anchor="middle">主干表示 hₜ</text><text x="125" y="179" class="small" text-anchor="middle">当前上下文</text>
+  <path d="M210 160H250" class="arrow"/>
+  <rect x="251" y="84" width="150" height="49" rx="11" fill="#dcf2e8"/><text x="326" y="115" class="label" text-anchor="middle">Head 1</text>
+  <rect x="251" y="136" width="150" height="49" rx="11" fill="#dcf2e8"/><text x="326" y="167" class="label" text-anchor="middle">Head 2</text>
+  <rect x="251" y="188" width="150" height="49" rx="11" fill="#dcf2e8"/><text x="326" y="219" class="label" text-anchor="middle">Head 3</text>
+  <text x="252" y="265" class="small">预测未来第 1 / 2 / 3 个位置</text>
+  <path d="M401 160H452" class="arrow"/>
+  <text x="488" y="88" class="small">第 1 位</text><text x="643" y="88" class="small">第 2 位</text><text x="800" y="88" class="small">第 3 位</text>
+  <path d="M513 150L645 119M513 150L645 206M665 119L811 110M665 119L811 167" class="edge"/>
+  <path d="M665 206L811 238" class="muted"/>
+  <g text-anchor="middle">
+    <circle cx="490" cy="150" r="27" fill="#cdebdc" stroke="#78b99d"/><text x="490" y="157" class="node">A</text>
+    <circle cx="650" cy="119" r="27" fill="#cdebdc" stroke="#78b99d"/><text x="650" y="126" class="node">B</text>
+    <circle cx="650" cy="206" r="27" fill="#e9efec" stroke="#c4d2cc"/><text x="650" y="213" class="node">C</text>
+    <circle cx="815" cy="110" r="27" fill="#ffe4df" stroke="#e8a79c"/><text x="815" y="117" class="node">D</text>
+    <circle cx="815" cy="167" r="27" fill="#e9efec" stroke="#c4d2cc"/><text x="815" y="174" class="node">E</text>
+    <circle cx="815" cy="238" r="27" fill="#e9efec" stroke="#c4d2cc"/><text x="815" y="245" class="node">F</text>
+  </g>
+  <text x="476" y="304" class="small">示意路径：A → B 通过，D 拒绝</text>
+  <path d="M845 160H895" class="arrow"/>
+  <rect x="898" y="107" width="184" height="115" rx="16" fill="#fff0dc" stroke="#e7bd82"/>
+  <text x="990" y="144" class="label" text-anchor="middle">Target 验证</text>
+  <text x="990" y="171" class="small" text-anchor="middle">Tree Attention</text>
+  <text x="990" y="195" class="small" text-anchor="middle">仅提交合法前缀</text>
+  <rect x="40" y="344" width="1042" height="49" rx="12" fill="#e7f3ec"/>
+  <text x="60" y="374" font-size="15">同一路径可看见祖先节点；兄弟分支相互隔离。首个拒绝之后按验收规则修正或选择下一步。</text>
+</svg>
