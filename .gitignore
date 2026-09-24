@@ -1,6 +1,8 @@
 node_modules/
+.venv/
 dist/
 public/infra/
+public/agent/
 .astro/
 .npm-cache/
 .vercel/

@@ -4,9 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "npm run build:infra && astro dev",
-    "build": "npm run build:infra && astro build",
+    "dev": "npm run build:guides && astro dev",
+    "build": "npm run build:guides && astro build",
+    "build:guides": "npm run build:infra && npm run build:agent",
     "build:infra": "python3 infra/build.py",
+    "build:agent": "python3 agent/make_figures.py && python3 agent/build.py",
     "preview": "astro preview",
     "astro": "astro"
   },
