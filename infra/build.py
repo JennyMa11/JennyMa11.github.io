@@ -40,6 +40,7 @@ CHAPTER_DESCS = {
     15: "CUDA、Kernel、Serving 与分布式故障模式",
     16: "从 API 到最终 Token 的完整工程复盘",
     17: "解释、实现和调试能力验收",
+    18: "GPU/NPU 软件栈、算子迁移、精度定位与验收",
 }
 
 
@@ -294,7 +295,7 @@ def render_home(pages):
         </section>
         <div class="home-stats"><div><strong>{len(chapters):02d}</strong><span>系统章节</span></div><div><strong>{len(list((ROOT / "figures").glob("*.png"))):02d}</strong><span>原理配图</span></div><div><strong>04</strong><span>学习阶段</span></div></div>
         <section class="home-section" id="roadmap"><div class="section-heading"><span>01 / LEARNING PATH</span><h2>从哪里开始？</h2><p>按层次推进，也可以直接跳到你关心的主题。</p></div><div class="route-grid">{route_cards}</div></section>
-        <section class="home-section" id="chapters"><div class="section-heading"><span>02 / HANDBOOK</span><h2>AI Infra 工程实践指南</h2><p>十八章沿同一条请求链路，连接硬件、算子、服务、性能与调试。</p></div><div class="chapter-grid">{chapter_cards}</div></section>
+        <section class="home-section" id="chapters"><div class="section-heading"><span>02 / HANDBOOK</span><h2>AI Infra 工程实践指南</h2><p>第 0–18 章沿同一条请求链路，连接硬件、算子、服务、性能、调试与模型适配。</p></div><div class="chapter-grid">{chapter_cards}</div></section>
         <section class="home-section" id="more"><div class="section-heading"><span>03 / MORE TO EXPLORE</span><h2>继续探索</h2><p>项目实践与技术写作笔记。</p></div><div class="extra-grid">{extra_cards}</div></section>
       </div>'''
     return shell("首页", "系统学习 LLM 推理加速的中文笔记", body, pages, "index.html", page_class="home-page")

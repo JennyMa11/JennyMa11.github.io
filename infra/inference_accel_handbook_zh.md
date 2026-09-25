@@ -1,4 +1,4 @@
-# AI Infra 工程实践指南：从 CUDA Kernel 到 LLM Serving
+# AI Infra 工程实践指南：从 CUDA Kernel 到 LLM Serving 与模型适配
 
 > **目标**：沿同一条请求链路学习硬件、算子、缓存、调度、分布式、性能与正确性。每章遵循「速查 → 原理 → 执行图 → 伪代码/最小实现 → 工业源码 → 性能 → Debug → 追问」。示例分为**可运行最小实现**与**机制伪代码**；伪代码不宣称可直接生产部署。
 >
@@ -14,6 +14,7 @@
   → Transformer 算子 → Attention/FlashAttention → KV/PagedAttention
   → Prefill/Decode → Scheduler/Serving → 量化/投机 → Runtime
   → 分布式/PD → 框架源码 → Profiling → Debug → Bug → 端到端复盘
+  → GPU/NPU 模型适配与验收
 ```
 
 | 阶段 | 完成后应能交付 |
@@ -22,6 +23,7 @@
 | 4–7 | RMSNorm、RoPE、Attention、分页 KV；说明每个张量的布局与生命周期 |
 | 8–12 | 简化 Scheduler 和 Request 状态机；画出从 API 到采样的完整调用链 |
 | 13–17 | 一份 Profiling 报告、一份逐层数值定位记录、一份故障复盘 |
+| 18 | 一份跨设备模型适配记录：环境矩阵、算子清单、数值对齐、性能与稳定性验收 |
 
 ---
 
@@ -412,6 +414,10 @@ def tiled_gemm_reference(a, b, tile=32):
 ```
 
 这个 Python 版本用于解释 tile 和尾块，**不是性能实现**。真正 CUDA/Triton Kernel 需要协作装载、边界 mask、寄存器 accumulator、合适布局与 Tensor Core 指令。先用 `torch.matmul`/cuBLAS 作正确性与性能基线。Tensor Core 是否启用取决于架构、dtype、shape/alignment、编译器和指令路径；不要只凭 GPU 型号推断。
+
+**为什么自写 GEMM 比 cuBLAS 慢？** 固定相同 shape、dtype、stride、预热与计时方法，逐项查 CTA/Warp tiling、寄存器分块、向量化加载、shared 布局、MMA 指令、流水线深度、寄存器压力与尾块比例。一个配置通常无法兼顾大方阵、细长矩阵和小 Batch；可为常见 Shape 做专用 Kernel 与 dispatch，并保留通用尾块路径。以端到端实际 Shape 分布选择优化目标，不把某个大矩阵的峰值结果当作所有请求的收益。
+
+**`cp.async` 与双缓冲**：在支持它的 NVIDIA 架构上，异步拷贝可把 Global Memory 的 tile 搬到 Shared Memory，让搬运下一块与当前块的计算重叠；关键收益是隐藏等待，而不是保证单次搬运本身更快。概念流水线为 `load(tile 1) ∥ compute(tile 0) → load(tile 2) ∥ compute(tile 1)`。实现要确保提交、等待与缓冲复用顺序正确；tile 太大可能抬高 Shared Memory/寄存器占用并降低驻留并行度。测吞吐、eligible warps 与资源用量，不能只追求高 Occupancy。
 
 ## 3.2 最小 Triton 算子：行 Softmax
 
@@ -2351,7 +2357,123 @@ for layer_id, (ref, test) in enumerate(zip(ref_layers, candidate_layers)):
 ---
 
 
-> **接下来用在哪里**：附录提供术语和深入阅读入口。
+> **接下来用在哪里**：下一章把前面的 Kernel、Serving、Profiling 和 Debug 方法用于跨设备模型适配。
+
+---
+
+# 第 18 章 GPU/NPU 模型适配：能跑、跑对、跑快、跑稳
+
+> **二面主线**：模型适配不是把 `.cuda()` 改成 `.npu()`。面试回答先交代目标模型、目标硬件和服务负载，再按**环境与框架 → 算子与结构 → 数值精度 → 性能 → 分布式 → 稳定性**给出证据。遇到问题先分类，再找到第一处失败或分歧。
+
+## 18.1 先明确适配边界与验收基线
+
+适配前冻结模型权重与配置、tokenizer/chat template、输入及采样参数、dtype/量化方式、目标设备型号、框架与运行时版本。至少保存一份原平台 reference：固定输入的中间张量、logits 和任务指标，以及 Prefill/Decode 的延迟与显存数据。不同后端的浮点计算顺序可能不同，因此先约定逐算子容差与模型级质量门槛，而不是要求所有生成文本逐字一致。
+
+| 维度 | 最小验收证据 | 典型漏项 |
+|---|---|---|
+| 能跑 | Load、Forward、Prefill、Decode、Generate 都成功；明确设备与 dtype | 只跑 `batch=1, seq=128` |
+| 跑对 | 分层/分算子误差、logits、Top-K、PPL 或任务指标 | 只看是否生成一句通顺的话 |
+| 跑快 | 同负载下 TTFT、TPOT、输出 tokens/s、吞吐、显存峰值 | 只报一个 Kernel 的加速比 |
+| 跑稳 | 长时运行、高并发、长上下文、取消/抢占/恢复 | 没有验证 KV 块回收与内存趋势 |
+| 覆盖率 | Batch、序列长度、动态 Shape、边界长度、并发矩阵 | 只验证单一静态 Shape |
+
+建议把验收矩阵写成 `batch × prompt_len × output_len × dtype × 并发数 × 并行度`，优先覆盖块边界（`block_size−1 / block_size / block_size+1`）、最长上下文、空或短输入、Prefix 命中、请求取消与资源紧张。每个失败样例保留输入、版本矩阵、首次异常位置和 trace，方便复现。
+
+## 18.2 NPU 软件栈：从设备到模型
+
+NPU 是面向神经网络张量运算的加速器；CPU 更适合控制与通用逻辑，GPU 提供大规模并行计算，NPU 的算子、内存与编译执行路径则由具体平台决定。以 NVIDIA 与昇腾为例：
+
+```text
+NVIDIA: PyTorch/推理框架 → CUDA → cuBLAS/cuDNN/NCCL 等 → GPU
+昇腾:  PyTorch/推理框架 → TorchNPU (torch_npu) → CANN/HCCL → Ascend NPU
+```
+
+CUDA 自定义 Kernel、CUDA 版 FlashAttention 或 PagedAttention **不能直接在昇腾上执行**。需要先核对目标版本是否已有等价 NPU 算子，再考虑用已有算子组合、替换 attention backend、修改布局，最后才实现自定义算子。已有算子“名称相同”也不能跳过 shape、mask、精度与性能验证。昇腾的 [TorchNPU 项目](https://github.com/Ascend/pytorch)提供 PyTorch 设备适配；其[版本配套表](https://github.com/Ascend/pytorch/blob/master/COMPATIBILITY.en.md)要求检查 PyTorch、TorchNPU、CANN、Python、驱动与固件组合；[HCCL 文档](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/910/commlib/hcclug/docs/en/user_guide/hccl_intro.md)说明集合通信支持。具体 API 与工具名称随版本变动，应以当前部署版本文档为准。
+
+**启动顺序**：设备可见与健康 → 驱动/固件 → CANN Runtime → PyTorch/TorchNPU → 最小张量 MatMul → 模型加载 → 首个 Forward → Prefill/Decode。若最小 MatMul 都失败，先修环境；不要直接改模型代码。记录版本、设备型号、容器镜像和环境变量，使成功运行可复现。
+
+## 18.3 算子与模型结构适配：先做清单再改代码
+
+从计算图列出 Linear/MatMul、RMSNorm、RoPE、Attention、Softmax、SiLU、TopK/Sampling、KV 读写和集合通信；逐项记录输入输出 `shape/dtype/stride/layout`、是否支持动态 Shape、目标设备实现和回退路径。对每个不支持的算子按“现成 NPU 实现 → 算子拆解 → 自定义 Kernel”选择，并记录拆解后是否引入额外搬运、同步或精度误差。
+
+| 模型特性 | 适配时要核对的语义 | 常见故障表现 |
+|---|---|---|
+| GQA/MQA | Q Head 与 KV Head 映射、KV 缓存布局 | 某些 Head 的 logits 错、长上下文才错 |
+| MLA / 特殊 Attention | 压缩与解压路径、mask、位置编码、缓存格式 | Prefill 对而 Decode 错 |
+| RoPE / MRoPE | 配对布局、position_id、多轴位置 | 首轮正常，Prefix/分块/多模态错误 |
+| MoE | Router Top-K、Expert 排布、Token 重排与还原 | 并发或多卡时输出错/通信慢 |
+| MTP / 特殊解码 | 额外预测头、候选 token 验证、状态推进 | 生成位置错位或接受率异常 |
+| 动态 Shape | 编译缓存、padding、尾块 mask、layout 转换 | 某些 batch/长度才报错或重编译 |
+
+**适配顺序**：先保证 eager、单卡、FP32/BF16 reference 路径正确；再接 KV Cache 与分块/并发；最后启用融合、量化、Graph 与多卡。这样每一步都能知道是哪项变化引入分歧。特殊结构（如 Gated DeltaNet）应先对照模型定义核对状态更新，再判断现有 Attention Kernel 是否适用，不能按普通 Transformer 路径硬套。
+
+## 18.4 跑不起来：找第一个真实错误
+
+```text
+设备未识别 → 驱动/固件/容器设备映射
+环境初始化失败 → Runtime、框架、插件版本配套
+权重加载失败 → checkpoint key、模型配置、dtype、内存
+首次 Forward 失败 → 第一个 Unsupported Op、shape、layout、device
+仅某些 Shape 失败 → 动态 Shape、mask、编译缓存、尾块
+仅多卡失败 → rank、通信组、collective 次序和分片尺寸
+```
+
+异步设备错误可能在后续同步点才浮现。保留**第一条异常之前**的算子与输入记录；必要时用同步执行或最小算子复现定位最早失败点，再逐层恢复异步与并发。不要把最后一个笼统 Runtime Error 当成根因。`device`、`dtype`、`shape`、`stride`、position、mask 和当前 rank 是最基本的现场信息。
+
+## 18.5 跑得起来但结果错：Reference 与第一处分歧
+
+先固定输入、权重、tokenizer、位置、mask、随机种子与采样方式，比较**同一次 Forward 的 logits**。如果不同，按 Layer 输出二分定位第一个异常层，再拆成 RMSNorm → QKV → RoPE → Attention（score、softmax、输出）→ MLP → residual；Decode 还要比对每一步新写入的 K/V、block table 和历史长度。这里的“二分”是减少人工检查范围；若误差缓慢累积，还需看每层误差曲线与容差，而不能只选一个布尔失败层。
+
+| 指标 | 计算/解释 | 注意点 |
+|---|---|---|
+| 最大/平均绝对误差 | `abs(ref−test)` | 适合观察整体规模与极值 |
+| 相对误差 | `abs(ref−test)/(abs(ref)+ε)` | reference 接近零时单独看会夸大 |
+| Cosine Similarity | 向量方向一致性 | 高相似度仍可能掩盖局部大错 |
+| `allclose` | 按 `atol + rtol × abs(ref)` 判定 | 容差须按 dtype/算子设定 |
+| Logits/Top-K/PPL | 模型级与任务级表现 | 采样微扰会放大为不同生成文本 |
+
+先查系统性错误：权重转置、维度广播、RoPE 排列、mask 方向、scale 轴、量化 zero-point、累计精度；再查偶发错误：未初始化读、越界、Stream 竞争、KV 共享/释放。对 FP16/BF16，记录累加 dtype 与融合前后运算顺序。**验收不能仅看最终 token 是否完全一致**：接近并列的 logits 可能因微小浮点差异改变采样路径，但任务质量仍可接受；反过来，错误也可能暂未改变 argmax。
+
+## 18.6 跑得对但慢：跨设备性能定位
+
+先用相同模型、负载和统计口径测端到端 TTFT、TPOT、吞吐与内存；再拆 Queue → Scheduler → Prefill → Decode → Sampling → Response。GPU 上用 Nsight Systems 看 CPU/GPU 时间线和空隙，用 Nsight Compute 看已确认的热点 Kernel；NPU 上用目标 CANN 版本的 Profiling 工具查看算子耗时、设备时间线与通信，不要把 CUDA 专属计数器名称直接套到 NPU。若阶段占比为 Attention 40%、MatMul 30%、Transpose 15%，先验证 Top-K 热点能否解释总耗时，再做一个改动并重测端到端结果。
+
+```text
+设备时间线有大片空洞？ → CPU 准备、调度、同步、H2D、短 Kernel/小 Batch、通信等待
+设备持续忙但单算子慢？ → dtype/layout/对齐、访存、算术强度、并行度、融合与编译结果
+算子在 CPU 执行？       → 检查不支持算子或显式搬运导致的 CPU fallback
+仅并发时慢？           → KV 容量、抢占、调度公平性、通信与尾延迟
+```
+
+**CPU fallback** 的典型路径是 NPU → CPU 算子 → NPU，功能与精度可能都对，但传输和同步造成明显延迟。用 op→device 映射、设备 trace 和拷贝事件证明它是否存在；不能仅凭“性能差”断言发生了 fallback。类似地，Transpose/Format Convert 可能不是计算热点，却在每层重复出现，累计成本很高。迁移后应优先消除不必要布局转换与同步，再评估算子融合和专用 Kernel。
+
+**指标、日志、Trace 各回答一个问题**：Metrics（QPS、TTFT/TPOT 的 P50/P95/P99、token/s、设备/KV 利用率）说明当前症状；Logs（加载失败、OOM、抢占、算子异常）说明发生的事件；Trace 用同一 request_id 串起 HTTP、Scheduler、Prefill、Decode、Sampling、响应，定位实际耗时点。记录时间戳与请求、rank、设备关联，避免把不同请求的事件误拼成一条链。
+
+## 18.7 多卡适配：计算分片与通信一致性
+
+TP 中，Column Parallel 把 `W=[W₁,W₂]` 按输出维切分，各设备先算本地输出；后续需要完整输出时才做 AllGather，也可能由下一层直接消费分片。Row Parallel 把输入/权重按归约维切分，局部部分和通常通过 AllReduce 或 ReduceScatter 合并。通信要按实际计算图决定，不能说“Column Parallel 一定 AllGather”。PP 还要测流水线空泡，DP 要看实例/批次分配，MoE 的 EP 重点关注 Token 路由、AllToAll、Expert 负载偏斜与还原顺序。
+
+调试多卡时给每个 rank 的 collective 编号、shape、dtype、group、输入 token 数和错误状态打点。某 rank 先 OOM 或跳过分支，其他 rank 可能表现为 HCCL/NCCL Hang；根因可能在更早的单卡错误。验证单卡 → 双卡 → 目标并行度，比较单卡与分布式 logits、吞吐、P99 和通信占比，再判断 TP/EP 的容量收益能否覆盖通信成本。
+
+## 18.8 稳定性、OOM 与工程环境
+
+推理内存按**权重 + KV Cache + 激活 + Graph/编译缓存 + 临时 Workspace + 分配器碎片**列账。并发升高才 OOM，先看 `max_num_seqs`、上下文上限、KV 块总数、Prefix Cache 与抢占；显存持续单向增长，检查张量/Block 生命周期和取消、异常路径。抢占可选择释放后重算、利用仍在缓存中的前缀，或把状态换出到主机内存；后者节省设备内存但增加传输与状态管理。每轮可核对 `free + occupied + cached = total`（按实现定义避免重复计数），结束后检查没有孤儿引用计数。
+
+长时压测同时覆盖请求取消、超时、Prefix 共享、块边界、动态 Batch、长上下文和多卡异常传播。监控 NaN/Inf、OOM、crash、内存峰值/趋势、抢占次数、恢复成本、P99 TTFT/TPOT；对可复现故障保存最小输入与版本矩阵。
+
+Linux/Docker 是复现环境的基本工具：记录镜像、容器启动参数、Volume、设备映射、端口和环境变量；用 `docker ps/logs/inspect/exec` 对照进程、日志与设备可见性。容器共享 Host Kernel，设备驱动通常依赖宿主机；镜像内的软件栈仍要与宿主驱动/固件和目标设备匹配。先在相同容器里跑最小 MatMul，再比较模型差异。
+
+## 18.9 面试回答与实操交付
+
+**什么是模型适配？**“把模型从原软硬件栈迁到目标设备，覆盖框架、算子/模型结构、精度、性能、分布式和稳定性；我用能跑、跑对、跑快、跑稳验收，而不是只看设备 API 改动。”
+
+**输出错误怎么定位？**“先固定模型、输入、dtype 和版本，保存 reference；比较 logits，再逐层和逐算子找第一处分歧；记录误差指标、shape/layout、位置和 KV 状态，修复后回归边界与并发场景。”
+
+**GPU 利用率低怎么定位？**“先看系统时间线区分设备是否无任务可做；若有空洞，查 CPU 准备、launch、同步、传输和通信；若持续有工作，再对热点 Kernel 看 Roofline、吞吐、缓存、Warp Stall、寄存器与 occupancy。NPU 用对应平台工具和计数器走同样的分层思路。”
+
+**怎么证明适配成功？**“交付版本/算子兼容矩阵、逐层误差表、端到端性能报告、Shape 覆盖矩阵和长时压力记录；每一项有可复现输入与通过阈值。”
+
+二面准备按“是什么 → 为什么 → 怎么实现 → 出问题怎么定位 → 怎样证明收益 → Trade-off”组织回答。优先把本章与第 13–15 章连读，再对照第 7–8 章的 Prefill/Decode、KV 与调度账本，用同一个真实项目案例说明每一步的证据。
 
 ---
 # 附录
@@ -2552,6 +2674,10 @@ for layer_id, (ref, test) in enumerate(zip(ref_layers, candidate_layers)):
 - [ ] 能说出投机解码五类 Draft 来源与统一流程
 - [ ] 能解释 PD 分离的动机与代价
 - [ ] 能说出 TP / PP / EP 的通信模式与适用场景
+- [ ] 能说明 GPU/NPU 软件栈、版本配套与 CUDA Kernel 迁移路径
+- [ ] 能用 reference 和中间张量找到模型精度的第一处分歧
+- [ ] 能分别解释跑不起来、结果错、性能差、偶发故障的定位步骤
+- [ ] 能拿出功能、精度、性能、稳定性与 Shape 覆盖的适配验收证据
 - [ ] 对每个技术都能主动说出「收益 + 代价 + 适用边界」
 
 ---

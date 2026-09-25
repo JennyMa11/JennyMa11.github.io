@@ -1,6 +1,6 @@
 # Infra 学习笔记
 
-这里是个人博客 `/infra/` 文档区的源文件。`build.py` 将四份 Markdown 笔记、`figures/` 配图和 `examples/` 教学代码构建到 `public/infra/`；Astro 随后把它们纳入 GitHub Pages 站点。主手册按 GPU/CUDA → 算子 → 推理服务 → 性能与调试组织为 18 章。
+这里是个人博客 `/infra/` 文档区的源文件。`build.py` 将四份 Markdown 笔记、`figures/` 配图和 `examples/` 教学代码构建到 `public/infra/`；Astro 随后把它们纳入 GitHub Pages 站点。主手册按 GPU/CUDA → 算子 → 推理服务 → 性能与调试 → GPU/NPU 模型适配组织为第 0–18 章。
 
 ## 本地构建
 
