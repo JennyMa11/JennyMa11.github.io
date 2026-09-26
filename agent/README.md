@@ -15,6 +15,19 @@ npm run preview
 
 可运行的最小工具循环：`python3 agent/examples/mini_agent.py`。这是离线教学示例，用确定性策略代替在线模型。
 
+第 0–10、12 章已按教学流程重构，每章提供学习目标、贯穿案例、机制推演、失败分析与带参考检查的练习。两个主案例分别是运费函数修复与带来源的资料检索；新增 6 张图解释状态、规划、工具、协议、评测与信任边界。
+
+离线实验使用 Python 标准库，无需 API Key。在仓库根目录运行：
+
+```bash
+python3 agent/examples/repair_lab.py --scenario happy
+python3 agent/examples/repair_lab.py --suite
+python3 agent/examples/retrieval_lab.py
+python3 agent/examples/check_labs.py
+```
+
+修复实验在临时目录中修改代码并运行真实检查，演示超时、越界、假完成、过期证据和预算耗尽；修复答案由确定性策略预置，不能用于评价 LLM 编程能力。检索实验使用便于手算的 token 重叠评分，展示范围过滤、排序、Recall@k 与无答案问题，不能称为 BM25 或向量搜索。教学中的工具白名单不是 OS 沙箱。正文片段与实验建议使用 Python 3.9 或更新版本。
+
 内容按传统 Agent、LLM Agent、系统工程、前沿与求职组织。事实和版本信息都链接至论文或官方规范；引用 [Hello-Agents](https://github.com/datawhalechina/hello-agents) 作为延伸阅读。该课程从 Agent 概念与经典方法讲到工具、记忆、协议和项目实现，配有教材与代码，适合系统学习。本站没有复制其正文或图片。
 
 第 11 章展开 Harness Engineering、长任务检查点与恢复、Context Engineering、Agent Skills、测试时计算和 Agentic RL，提供同模型同预算的对照实验设计；新增资料于 2026-09-26 核对。
