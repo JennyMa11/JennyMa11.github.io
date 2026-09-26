@@ -1,0 +1,22 @@
+.prose .source-notes {
+  margin: 2rem 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+.prose .source-note h3,
+.prose .source-note h4 {
+  margin: 0 0 .4rem;
+  overflow-wrap: anywhere;
+}
+.prose .source-meta {
+  color: var(--muted);
+  font-size: .85rem;
+}
+.prose .source-jump {
+  font-size: .8em;
+  white-space: nowrap;
+}
+.prose .source-note {
+  scroll-margin-top: 90px;
+  overflow-wrap: anywhere;
+}

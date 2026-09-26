@@ -1,0 +1,595 @@
+{
+  "reviewed_on": "2026-09-26",
+  "sources": [
+    {
+      "id": "source-01",
+      "url": "https://github.com/datawhalechina/hello-agents",
+      "group": "基础与经典方法",
+      "title": "Hello-Agents：从零开始构建智能体",
+      "kind": "开源课程",
+      "summary": "Datawhale 的系统课程，从传统 Agent、LLM 与 ReAct 等方法讲起，逐步实现工具、记忆、检索、上下文和协议，再通过旅行助手、深度研究与多 Agent 项目串联实践。仓库同时提供教材、代码与学习资源。",
+      "takeaway": "适合沿着“概念 → 自建框架 → 项目”的路线学习，理解各模块如何接起来。",
+      "note": "本指南把它作为课程型延伸阅读；仓库目录会更新，不能把教材中出现的所有方法视为同一种架构。"
+    },
+    {
+      "id": "source-02",
+      "url": "https://www.anthropic.com/engineering/building-effective-agents",
+      "group": "基础与经典方法",
+      "title": "Building effective agents",
+      "kind": "技术文章",
+      "summary": "Anthropic 区分预先编排的 workflow 和由模型动态决定步骤的 Agent，介绍提示链、路由、并行、编排者与执行者、评估者与优化者等模式，并讨论工具接口设计。文章建议从简单、可组合的结构出发。",
+      "takeaway": "先判断任务是否需要动态决策，再选择编排方式；工具的描述、参数和反馈与提示同样重要。",
+      "note": "这是 2024 年的工程经验文章，原页也提示工具生态已变化；可用于理解结构，不宜当作当前产品功能清单。"
+    },
+    {
+      "id": "source-03",
+      "url": "https://arxiv.org/abs/2210.03629",
+      "group": "基础与经典方法",
+      "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+      "kind": "论文",
+      "summary": "ReAct 让推理步骤与环境行动交替进行：模型根据已有观察选择下一步工具或操作，再用返回的信息修正计划。论文在知识问答、事实核验和交互式任务中比较这种闭环与只推理或只行动的基线。",
+      "takeaway": "行动能补充外部证据，推理能跟踪计划与处理异常；二者形成持续反馈循环。",
+      "note": "它解释第 2 章工具循环的思想来源；论文中的轨迹形式不意味着产品需要向用户公开全部内部推理。"
+    },
+    {
+      "id": "source-04",
+      "url": "https://arxiv.org/abs/2305.04091",
+      "group": "基础与经典方法",
+      "title": "Plan-and-Solve Prompting",
+      "kind": "论文",
+      "summary": "论文分析零样本思维链中的计算错误、遗漏步骤与语义误解，提出先把任务分成子问题并制定计划，再逐步求解；PS+ 通过更细的指令改善计算与推理步骤。在多种推理数据集上评估这一提示方法。",
+      "takeaway": "显式分解可以减少漏步骤，但执行过程中仍需要检查每一步是否正确。",
+      "note": "这是推理提示研究；第 3 章将其思路用于 Agent 规划，持续执行、工具验收和重新规划属于额外的系统设计。"
+    },
+    {
+      "id": "source-05",
+      "url": "https://arxiv.org/abs/2305.10601",
+      "group": "基础与经典方法",
+      "title": "Tree of Thoughts: Deliberate Problem Solving with Large Language Models",
+      "kind": "论文",
+      "summary": "Tree of Thoughts 把较完整的中间思路作为搜索节点，生成多个候选，评估后决定扩展、前瞻或回溯。论文用 24 点、创意写作和迷你填字任务说明，搜索多条路径可以改善需要规划的问题求解。",
+      "takeaway": "它把单条推理链扩展为候选生成、评价和搜索；更强探索通常意味着更多模型调用。",
+      "note": "第 3、11 章借此解释测试时搜索。结果依赖任务、评价器和预算，不能推导出每个编程 Agent 都默认使用树搜索。"
+    },
+    {
+      "id": "source-06",
+      "url": "https://arxiv.org/abs/2303.11366",
+      "group": "基础与经典方法",
+      "title": "Reflexion: Language Agents with Verbal Reinforcement Learning",
+      "kind": "论文",
+      "summary": "Reflexion 根据任务执行后的反馈生成文字反思，把经验保存到情节记忆中，供下一轮尝试使用。论文比较不同反馈来源与记忆方式，在交互决策、编程和语言推理任务中评估改进。",
+      "takeaway": "失败反馈可以转成下一轮可读取的经验，减少重复犯错。",
+      "note": "标题中的“强化”主要通过文字反馈和记忆实现，不更新模型权重；应与第 11 章真正训练参数的 Agentic RL 区分。"
+    },
+    {
+      "id": "source-07",
+      "url": "https://arxiv.org/abs/2005.11401",
+      "group": "检索、上下文与协议",
+      "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+      "kind": "论文",
+      "summary": "RAG 把预训练生成模型中的参数化知识与外部文档索引中的非参数化知识结合：先检索相关材料，再条件化生成答案。论文比较按整个序列或逐 token 使用检索文档的方式，并评估知识密集型 NLP 任务。",
+      "takeaway": "外部检索让知识更新与来源追踪成为可能，生成结果同时受检索质量和模型能力影响。",
+      "note": "这是 RAG 的基础研究，不是完整 Agent 架构；检索到文档也不自动保证事实正确或引用准确。"
+    },
+    {
+      "id": "source-08",
+      "url": "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents",
+      "group": "检索、上下文与协议",
+      "title": "Effective context engineering for AI agents",
+      "kind": "技术文章",
+      "summary": "Anthropic 将上下文工程定义为每轮筛选系统指令、工具、历史与数据的过程。文章讨论上下文增大后的信息利用问题，建议使用简洁且高信号的内容、按需读取、压缩、结构化笔记和子 Agent。",
+      "takeaway": "关键在于持续管理有限上下文，让当前任务所需的证据与约束进入模型。",
+      "note": "用于第 6、11 章；按需检索节省上下文，但增加运行时发现信息的成本，压缩也可能丢失细节。"
+    },
+    {
+      "id": "source-09",
+      "url": "https://modelcontextprotocol.io/specification/2026-07-28",
+      "group": "检索、上下文与协议",
+      "title": "Model Context Protocol 2026-07-28 Specification",
+      "kind": "协议规范",
+      "summary": "该版本 MCP 规范定义主机、客户端与服务端如何通过 JSON-RPC 交换工具、资源和提示等能力，并规定请求、能力协商、进度、取消、错误及扩展机制。它提供连接模型应用与外部能力的互操作接口。",
+      "takeaway": "MCP 解决接口与消息格式的兼容问题，工具实际执行及权限仍由实现负责。",
+      "note": "第 8 章采用指定版本；实现时要核对服务端版本和可选能力，协议本身不构成操作系统沙箱。"
+    },
+    {
+      "id": "source-10",
+      "url": "https://a2a-protocol.org/latest/specification/",
+      "group": "检索、上下文与协议",
+      "title": "Agent2Agent Protocol Specification",
+      "kind": "协议规范",
+      "summary": "A2A 用 Agent Card 描述可发现的能力与接口，通过消息、任务状态和产物表达 Agent 间协作，并规定流式更新、订阅、推送及认证授权。规范提供多种协议绑定，支持跨系统的任务交互。",
+      "takeaway": "需要委托独立 Agent 时，双方既要交换任务，也要跟踪状态与接收产物。",
+      "note": "latest 地址会更新；第 8 章将它与 MCP 的工具接入角色区分，具体可用能力取决于双方声明和实现。"
+    },
+    {
+      "id": "source-11",
+      "url": "https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents",
+      "group": "评测与实践",
+      "title": "Demystifying evals for AI agents",
+      "kind": "技术文章",
+      "summary": "Anthropic 解释任务、试验、轨迹、环境最终状态、评分器与评测 harness 的关系，对比代码、模型和人工评分，并讨论能力评测、回归评测、多次试验及不同类型 Agent 的验收方式。",
+      "takeaway": "必须检查环境是否真的发生了预期变化；“Agent 说完成”与实际完成是不同的评测对象。",
+      "note": "第 9 章的方法来源；模型评分器需要人工校准，基准任务也需要审查，单个分数不能覆盖可靠性、成本和用户体验。"
+    },
+    {
+      "id": "source-12",
+      "url": "https://www.swebench.com/",
+      "group": "评测与实践",
+      "title": "SWE-bench Leaderboards",
+      "kind": "基准网站",
+      "summary": "网站汇总 SWE-bench 系列基准、说明和排行榜。核心任务来自真实软件仓库的问题，系统需修改代码，再通过测试评估是否修复问题且没有破坏相关已有行为；不同子集和设置分别报告结果。",
+      "takeaway": "编程 Agent 的评测需要可复现仓库环境、问题说明和能判断修复效果的测试。",
+      "note": "这里链接的是动态基准入口，未宣称某家当前排名；比较结果时必须核对数据集版本、模型、harness 与预算。"
+    },
+    {
+      "id": "source-13",
+      "url": "https://arxiv.org/abs/2404.07972",
+      "group": "评测与实践",
+      "title": "OSWorld: Benchmarking Multimodal Agents for Open-Ended Tasks in Real Computer Environments",
+      "kind": "论文",
+      "summary": "OSWorld 提供真实计算机环境中的多模态任务，覆盖桌面应用、文件操作及跨应用流程。任务有初始化状态和基于执行结果的评估脚本，论文分析 GUI 定位、操作知识和长流程执行中的困难。",
+      "takeaway": "计算机使用 Agent 要接受真实环境操作与最终状态检查，而非只评价截图问答。",
+      "note": "第 9 章用它说明环境化评测；原论文成绩对应当时模型，不代表 2026 年系统的能力水平。"
+    },
+    {
+      "id": "source-14",
+      "url": "https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/",
+      "group": "评测与实践",
+      "title": "A practical guide to building agents",
+      "kind": "实践指南",
+      "summary": "OpenAI 从适用场景讲到模型、工具与指令三项基础组件，说明单 Agent 循环、管理者把 Agent 当工具调用、Agent 间移交等编排方式，并讨论护栏与人工介入。建议先建立质量基线，再优化成本与复杂度。",
+      "takeaway": "先把单 Agent、工具和退出条件做好，遇到复杂指令或工具选择困难时再拆分协作。",
+      "note": "用于把前面各章串成可落地系统；示例 SDK 与模型名称会变化，应以原则及当前接口文档为准。"
+    },
+    {
+      "id": "source-15",
+      "url": "https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents",
+      "group": "Harness、Skills 与训练前沿",
+      "title": "Effective harnesses for long-running agents",
+      "kind": "技术文章",
+      "summary": "Anthropic 针对跨多个上下文窗口的软件开发任务，设计初始化 Agent 建立环境、功能清单和进度文件；后续会话逐项实现、测试并记录 Git 与交接信息。文章分析过早宣告完成、留下半成品和缺少端到端验证的问题。",
+      "takeaway": "长期可靠性需要外部持久状态、可验证的小步成果和清晰交接，单靠上下文压缩不够。",
+      "note": "第 11 章长任务 harness 的具体案例；它是特定应用实验，不能直接证明任何任务采用同样结构都有效。"
+    },
+    {
+      "id": "source-16",
+      "url": "https://openai.com/index/harness-engineering/",
+      "group": "Harness、Skills 与训练前沿",
+      "title": "Harness engineering: leveraging Codex in an agent-first world",
+      "kind": "技术文章",
+      "summary": "OpenAI 描述用 Codex 构建产品时，工程师如何把重点转向任务设计、仓库规范、文档索引和反馈环境。案例把 UI、日志与工具暴露给 Agent，用自动检查约束架构，并持续清理文档和代码偏差。",
+      "takeaway": "Harness 既包含执行循环，也包含让 Agent 看得见、测得出、能遵循的工程环境。",
+      "note": "这是团队实践案例，第 11 章抽取其环境与反馈设计；文章中的效率和产出是特定项目经验，不能当作通用性能保证。"
+    },
+    {
+      "id": "source-17",
+      "url": "https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills",
+      "group": "Harness、Skills 与训练前沿",
+      "title": "Equipping agents for the real world with Agent Skills",
+      "kind": "技术文章",
+      "summary": "Anthropic 将专业流程打包为含 SKILL.md、脚本与资源的目录。系统先加载技能名称和描述，在需要时读取正文与附加文件，实现渐进式披露；文章展示如何用技能复用流程和可执行步骤。",
+      "takeaway": "Skills 将过程知识从长提示中独立出来，既能降低上下文负担，也便于复用和维护。",
+      "note": "第 11 章的概念来源；技能内容与脚本需要可信来源，是否读取或执行仍受具体运行时与权限控制。"
+    },
+    {
+      "id": "source-18",
+      "url": "https://arxiv.org/abs/2503.09516",
+      "group": "Harness、Skills 与训练前沿",
+      "title": "Search-R1: Training LLMs to Reason and Leverage Search Engines with Reinforcement Learning",
+      "kind": "论文",
+      "summary": "Search-R1 把多轮搜索放进模型推理过程，用强化学习训练何时检索、如何继续推理并生成答案。训练处理检索文本与模型生成 token 的区别，依据结果奖励优化策略，在多个问答数据集上做实验。",
+      "takeaway": "训练对象包括工具使用决策，外部检索结果不能被当作模型自己生成的行为来学习。",
+      "note": "第 11 章 Agentic RL 的实例；主要证据来自检索问答，不能直接替代编程或桌面操作任务的验证。"
+    },
+    {
+      "id": "source-19",
+      "url": "https://arxiv.org/abs/2508.03680",
+      "group": "Harness、Skills 与训练前沿",
+      "title": "Agent Lightning: Train ANY AI Agents with Reinforcement Learning",
+      "kind": "论文",
+      "summary": "Agent Lightning 将 Agent 执行与强化学习训练分离，用统一转移记录表示已有 Agent 的轨迹，再通过分层的 LightningRL 分配多步任务中的信用。论文展示在文本到 SQL、RAG 和工具辅助数学任务上的应用。",
+      "takeaway": "保留原有执行框架，通过标准化轨迹接口接入训练，减少训练逻辑与应用逻辑的耦合。",
+      "note": "“ANY”是框架目标，不是无需适配的保证；奖励、状态建模和任务数据仍需设计。"
+    },
+    {
+      "id": "source-20",
+      "url": "https://arxiv.org/abs/2608.17528",
+      "group": "Harness、Skills 与训练前沿",
+      "title": "Agent Lightning v1.0",
+      "kind": "论文",
+      "summary": "v1.0 面向更复杂的训练链路：harness 负责环境和工具循环，训练侧处理模型请求响应，再进行 token 对齐、样本合并、优势与损失处理及调度。论文用编程任务说明这种分工与训练流程。",
+      "takeaway": "执行系统和训练系统应在清晰的数据接口处连接，训练还需处理多轮轨迹中的 token 与奖励。",
+      "note": "这是 2026 年的训练工作，第 11 章用于展示工程演进；文中模型提升对应特定数据与设置，不构成五家产品排名。"
+    },
+    {
+      "id": "source-21",
+      "url": "https://arxiv.org/abs/2606.01533",
+      "group": "Harness、Skills 与训练前沿",
+      "title": "Multi-Agent Computer Use",
+      "kind": "论文",
+      "summary": "论文让管理者把计算机任务分解为带依赖的 DAG，将已满足前置条件的节点分发给执行者并行运行；随着新观察到来继续修改计划。实验涵盖桌面与网页任务，关注成功率和完成耗时。",
+      "takeaway": "多 Agent 的收益依赖可并行工作、明确依赖和共享信息管理，分解后仍要根据环境反馈调整。",
+      "note": "第 11 章的研究入口；实验改进不表示执行者越多越好，也不能无视共享环境冲突与调度开销。"
+    },
+    {
+      "id": "source-22",
+      "url": "https://arxiv.org/abs/2609.14239",
+      "group": "Harness、Skills 与训练前沿",
+      "title": "CoArena",
+      "kind": "论文",
+      "summary": "CoArena 提出实时成对比较 Agent 的评测设计：真实用户给出任务，两个系统在相同隔离环境中执行，再由用户盲评。论文讨论反馈延迟、数据新鲜度、污染风险，以及使用 Bradley–Terry、在线 Elo 和置信区间聚合偏好。",
+      "takeaway": "真实任务的用户偏好能补充静态基准，但比较仍需要一致环境和不确定性说明。",
+      "note": "论文中的数值示例是推导或示意，不是已部署竞技场的实测结果；本指南仅将它作为评测方案研究。"
+    },
+    {
+      "id": "source-23",
+      "url": "https://arxiv.org/abs/2609.08149",
+      "group": "Harness、Skills 与训练前沿",
+      "title": "SWE-Bench Pro Verified",
+      "kind": "论文",
+      "summary": "这项工作审查编程基准的奖励投机与任务质量问题：答案或隐藏评测信息泄漏可能让系统得分虚高，题目描述和测试范围不一致也会扭曲结果。作者提出防护与核验措施，并比较调整前后的评测表现。",
+      "takeaway": "高分可能来自评测缺陷；要检查任务、测试、隐藏材料隔离和轨迹，才能判断真实修复能力。",
+      "note": "用于第 11 章解释基准核验的重要性；其结论针对审查的基准与设置，不能据此判定所有公开成绩无效。"
+    },
+    {
+      "id": "source-24",
+      "url": "https://opencode.ai/docs/",
+      "group": "OpenCode",
+      "title": "OpenCode Documentation",
+      "kind": "官方文档",
+      "summary": "OpenCode 文档入口介绍终端、桌面与编辑器使用方式，以及模型提供者、项目初始化、配置和常见操作。项目把编程会话、工具和项目指令组织成可扩展的 Agent 环境。",
+      "takeaway": "从入口可了解怎样连接模型并让 Agent 在具体代码仓库中工作。",
+      "note": "第 13 章用它确认产品范围；入口是功能总览，运行时的具体实现需要结合后面的专门文档和固定版本源码。"
+    },
+    {
+      "id": "source-25",
+      "url": "https://docs.openclaw.ai/concepts/architecture",
+      "group": "OpenClaw",
+      "title": "OpenClaw Gateway Architecture",
+      "kind": "官方文档",
+      "summary": "文档把 Gateway 定义为长期运行的中心，负责渠道连接、客户端和节点通信，以及会话与控制事件。客户端通过有类型的 WebSocket 消息连接，按协议交换请求、响应和事件。",
+      "takeaway": "OpenClaw 的系统中心是持续运行的 Gateway，多入口消息汇聚后才进入 Agent 执行。",
+      "note": "用于第 13 章区分消息网关与单次编程会话；连接协议和事件机制并不直接描述模型推理质量。"
+    },
+    {
+      "id": "source-26",
+      "url": "https://hermes-agent.nousresearch.com/docs/developer-guide/architecture",
+      "group": "Hermes Agent",
+      "title": "Hermes Agent Architecture",
+      "kind": "官方文档",
+      "summary": "架构文档串起 AIAgent、会话循环、提示构建、工具注册与分发、上下文引擎、SQLite 会话存储、记忆和网关，并说明不同终端执行后端。它强调可持久会话与可扩展工具的组合。",
+      "takeaway": "理解 Hermes 应沿着“入口 → 循环 → 工具 → 存储与记忆”的数据路径阅读。",
+      "note": "用于第 13 章整体架构；类和文件位置可能变化，本文具体代码行为另外以固定 commit 链接为依据。"
+    },
+    {
+      "id": "source-27",
+      "url": "https://code.claude.com/docs/en/how-claude-code-works",
+      "group": "Claude Code",
+      "title": "How Claude Code works",
+      "kind": "官方文档",
+      "summary": "Claude Code 用收集上下文、采取行动、验证结果的循环完成任务，模型通过文件、搜索、命令和其他工具操作项目。文档也介绍会话恢复、上下文管理、项目指令、扩展与检查点等机制。",
+      "takeaway": "模型决定下一步，运行时执行工具并把反馈送回模型；验证结果是编程循环的一部分。",
+      "note": "第 13 章据此分析公开工作原理。官方功能说明不等于内部完整源码，也不能推出未公开的搜索或训练实现。"
+    },
+    {
+      "id": "source-28",
+      "url": "https://developers.openai.com/codex/cli/",
+      "group": "Codex",
+      "title": "Codex CLI",
+      "kind": "官方文档",
+      "summary": "Codex CLI 的官方入口介绍在本地终端中阅读仓库、修改文件、执行命令和继续会话的方式，并连接配置、模型、工具与扩展等文档。它是让模型在代码工作区中完成任务的交互入口。",
+      "takeaway": "CLI 的行为由模型、项目指令、工具和运行时约束共同决定。",
+      "note": "第 13 章用它界定终端产品范围；不同平台、版本和配置会影响功能，不能把 CLI 与云端运行环境视为完全相同。"
+    },
+    {
+      "id": "source-29",
+      "url": "https://opencode.ai/docs/server/",
+      "group": "OpenCode",
+      "title": "OpenCode Server",
+      "kind": "官方文档",
+      "summary": "Server 文档说明 OpenCode 的客户端与服务端结构：可启动独立 HTTP 服务，使用 OpenAPI 描述接口，围绕会话、消息、文件、工具与事件进行交互，供终端或其他客户端接入。",
+      "takeaway": "UI 与执行服务可以分开，外部应用可围绕同一会话接口构建交互。",
+      "note": "用于第 13 章解释部署与集成；HTTP API 的开放程度不等于运行环境已隔离，认证和暴露范围需另行配置。"
+    },
+    {
+      "id": "source-30",
+      "url": "https://opencode.ai/docs/agents/",
+      "group": "OpenCode",
+      "title": "OpenCode Agents",
+      "kind": "官方文档",
+      "summary": "文档介绍主要 Agent 与子 Agent 的区别，以及 Build、Plan 和探索类角色如何配置工具、模型、提示和权限。不同角色可承担实施、规划与聚焦子任务，系统还存在压缩、标题等辅助用途。",
+      "takeaway": "角色区别主要体现在任务、工具与权限，而非名字本身带来能力保证。",
+      "note": "Plan 的实际操作边界由权限决定，不能简单理解为绝对只读；默认角色与配置会随版本调整。"
+    },
+    {
+      "id": "source-31",
+      "url": "https://opencode.ai/docs/permissions/",
+      "group": "OpenCode",
+      "title": "OpenCode Permissions",
+      "kind": "官方文档",
+      "summary": "权限文档说明如何通过 allow、ask、deny 规则控制工具操作，并根据工具及资源模式设置例外。规则在执行前决定允许、拒绝还是需要用户确认，可用于限制写文件、命令与其他操作。",
+      "takeaway": "明确的权限策略可以约束 Agent 能发起哪些操作，并把需要确认的情况交给用户。",
+      "note": "第 13 章区分该机制与 OS 沙箱；应用层规则不能替代对进程、文件系统和网络的实际隔离。"
+    },
+    {
+      "id": "source-32",
+      "url": "https://github.com/anomalyco/opencode/blob/696f41bc8e7586657375d53390925fc54c25d34c/packages/opencode/src/session/processor.ts",
+      "group": "OpenCode",
+      "title": "OpenCode session/processor.ts",
+      "kind": "固定版本源码",
+      "summary": "该文件处理模型流式事件，将文本、工具调用、工具结果与步骤完成写入会话，协调重试、快照和循环控制。代码还对重复工具调用触发 doom_loop 权限询问，并处理摘要等受限制的运行场景。",
+      "takeaway": "Agent 循环包含事件处理、状态记录与失败恢复，不能简化为反复发送提示。",
+      "note": "链接固定在 commit 696f41b；用于核对第 13 章的执行与保护机制，只代表该版本的代码路径。"
+    },
+    {
+      "id": "source-33",
+      "url": "https://github.com/anomalyco/opencode/blob/696f41bc8e7586657375d53390925fc54c25d34c/packages/opencode/src/session/compaction.ts",
+      "group": "OpenCode",
+      "title": "OpenCode session/compaction.ts",
+      "kind": "固定版本源码",
+      "summary": "该文件组织会话压缩：检查上下文预算、选择历史内容、生成摘要，并按配置清理较旧工具输出。它还处理压缩过程中的错误与停止条件，让后续会话在有限上下文中继续。",
+      "takeaway": "上下文管理包括预算判断、裁剪和摘要，三者的条件与保留内容都需要明确。",
+      "note": "链接固定在 commit 696f41b；prune 行为受配置控制，不应把源码中存在的能力写成所有安装的默认行为。"
+    },
+    {
+      "id": "source-34",
+      "url": "https://github.com/anomalyco/opencode/blob/696f41bc8e7586657375d53390925fc54c25d34c/packages/opencode/src/tool/task.ts",
+      "group": "OpenCode",
+      "title": "OpenCode tool/task.ts",
+      "kind": "固定版本源码",
+      "summary": "Task 工具创建或恢复子会话，向指定 Agent 传入聚焦任务，并设置工具与权限约束，再把执行结果返回调用者。代码支持通过 task_id 续跑，并包含受实验开关控制的后台子任务路径。",
+      "takeaway": "委派涉及子会话生命周期、权限边界、恢复标识和结果汇报。",
+      "note": "链接固定在 commit 696f41b；后台路径有实验条件，不能据此宣称默认安装无条件支持全部并行后台能力。"
+    },
+    {
+      "id": "source-35",
+      "url": "https://opencode.ai/docs/config/#compaction",
+      "group": "OpenCode",
+      "title": "OpenCode Compaction Configuration",
+      "kind": "官方配置文档",
+      "summary": "链接直接定位上下文压缩配置，说明自动压缩、旧工具输出裁剪和预留 token 等选项。配置决定什么时候压缩，以及给后续推理和工具反馈留出多少上下文空间。",
+      "takeaway": "压缩策略是可调的资源管理机制，既影响成本，也影响保留的信息。",
+      "note": "用于解释第 13 章的配置边界；示例数值和默认值需按实际版本核对，不能套用于其他 Agent。"
+    },
+    {
+      "id": "source-36",
+      "url": "https://opencode.ai/docs/lsp/",
+      "group": "OpenCode",
+      "title": "OpenCode LSP",
+      "kind": "官方文档",
+      "summary": "LSP 文档说明 OpenCode 如何接入语言服务器，在代码操作后获得诊断及语言相关信息。类型错误、语法问题、引用等反馈能帮助 Agent 理解和修改代码。",
+      "takeaway": "语言服务器提供机器可检查的代码反馈，补充文件文本与模型判断。",
+      "note": "第 13 章将它列为环境反馈；LSP 诊断不能替代行为测试或完整的编译、集成验证。"
+    },
+    {
+      "id": "source-37",
+      "url": "https://opencode.ai/docs/skills/",
+      "group": "OpenCode",
+      "title": "OpenCode Skills",
+      "kind": "官方文档",
+      "summary": "文档说明技能目录与 SKILL.md 的发现方式，以及通过名称和描述让 Agent 识别可用流程、按需读取正文的机制。技能访问可由权限配置控制，项目与用户目录都可提供技能。",
+      "takeaway": "Skills 把可复用流程组织成按需加载的资料，而不是每轮都附加完整内容。",
+      "note": "用于第 13 章比较扩展机制；技能是否可发现、读取和执行取决于目录结构、权限及运行时实现。"
+    },
+    {
+      "id": "source-38",
+      "url": "https://docs.openclaw.ai/concepts/multi-agent",
+      "group": "OpenClaw",
+      "title": "OpenClaw Multi-Agent Routing",
+      "kind": "官方文档",
+      "summary": "文档介绍如何在同一 Gateway 下配置多套 Agent 身份、工作区、认证与会话，再用绑定规则把渠道、账户或用户消息路由到指定 Agent。各 Agent 可以保持独立状态。",
+      "takeaway": "这里的 multi-agent 首先解决多入口消息分流与身份隔离。",
+      "note": "第 13 章明确将它与一项任务中的多执行者协作区分；配置多个身份并不自动产生任务分解与协同。"
+    },
+    {
+      "id": "source-39",
+      "url": "https://docs.openclaw.ai/tools/subagents",
+      "group": "OpenClaw",
+      "title": "OpenClaw Sub-agents",
+      "kind": "官方文档",
+      "summary": "子 Agent 文档描述主会话如何启动独立子运行，指定任务与运行限制，再接收完成后的结果或摘要。它涉及生成、状态跟踪、生命周期和工具限制，用于卸载较聚焦的工作。",
+      "takeaway": "独立子任务能减少主会话上下文负担，但主 Agent 仍需检查汇报并整合结果。",
+      "note": "用于第 13 章的任务协作分析；是否后台运行、能用哪些工具和如何通知，以具体配置与版本为准。"
+    },
+    {
+      "id": "source-40",
+      "url": "https://github.com/openclaw/openclaw/blob/239bae9aa9ea6019c84eb3fbcc41d075ac7ac024/docs/agent-runtime-architecture.md",
+      "group": "OpenClaw",
+      "title": "OpenClaw Agent Runtime Architecture",
+      "kind": "固定版本架构文档",
+      "summary": "该版本说明 OpenClaw 自己拥有 Agent runtime，列出 agent-core、会话、模型提供者与 harness 注册等边界。兼容别名会归一化为当前运行时，特定 harness 的路由由注册机制决定。",
+      "takeaway": "阅读当前架构要分清运行时主体、兼容名称和可插入的 harness。",
+      "note": "链接固定在 commit 239bae9；第 13 章据此避免沿用旧版外部框架描述，它不代表整个项目历史上始终采用相同架构。"
+    },
+    {
+      "id": "source-41",
+      "url": "https://github.com/openclaw/openclaw/blob/239bae9aa9ea6019c84eb3fbcc41d075ac7ac024/docs/concepts/agent-loop.md",
+      "group": "OpenClaw",
+      "title": "OpenClaw Agent Loop",
+      "kind": "固定版本架构文档",
+      "summary": "文档描述 Agent 运行从排队到模型与工具事件、持久化和终止回执的过程。每会话与全局队列控制并发，写入者运行标识与事务检查阻止已被替代的运行提交旧轨迹，并区分运行完成与消息投递。",
+      "takeaway": "长驻服务必须处理并发、陈旧写入和投递生命周期，不能只保存对话文本。",
+      "note": "链接固定在 commit 239bae9；用于第 13 章的恢复与一致性分析，不表示所有工具副作用都能事务回滚。"
+    },
+    {
+      "id": "source-42",
+      "url": "https://docs.openclaw.ai/concepts/memory",
+      "group": "OpenClaw",
+      "title": "OpenClaw Memory",
+      "kind": "官方文档",
+      "summary": "Memory 文档把持久记忆放在工作区 Markdown 文件中，说明长期资料、用户信息和日常记录如何注入或检索。memory_search、memory_get 及可配置后端帮助按需找到相关历史。",
+      "takeaway": "只有真正写入持久文件或后端的内容才能跨会话保留；当前对话中的一句话不等于已保存记忆。",
+      "note": "第 13 章比较文件记忆与检索；注入预算、搜索后端和附加能力由配置决定。"
+    },
+    {
+      "id": "source-43",
+      "url": "https://docs.openclaw.ai/concepts/agent",
+      "group": "OpenClaw",
+      "title": "OpenClaw Agent Runtime",
+      "kind": "官方文档",
+      "summary": "这页说明工作区、启动文件、系统提示、技能和会话存储如何组成一次 Agent 运行。它区分模型可见的上下文与持久状态，并描述运行时如何组织项目资料和会话数据。",
+      "takeaway": "工作区资料、会话存储与当前上下文是不同层，启动时需要把合适的资料交给模型。",
+      "note": "用于第 13 章理解持久化边界；当前会话存储与历史兼容格式可能不同，应结合所用版本读取。"
+    },
+    {
+      "id": "source-44",
+      "url": "https://docs.openclaw.ai/gateway/sandboxing",
+      "group": "OpenClaw",
+      "title": "OpenClaw Sandboxing",
+      "kind": "官方文档",
+      "summary": "沙箱文档说明如何将选定 Agent 或会话的工具执行移到隔离后端，并配置文件挂载、工作区访问和网络等范围。Gateway 本身仍在主机运行，工具的宿主位置随设置变化。",
+      "takeaway": "沙箱隔离的是受配置覆盖的工具执行环境，要逐项确认路径与网络范围。",
+      "note": "第 13 章强调其默认并非自动开启；部署了 Gateway 或设置应用权限不等于所有操作已进入沙箱。"
+    },
+    {
+      "id": "source-45",
+      "url": "https://hermes-agent.nousresearch.com/docs/user-guide/features/memory",
+      "group": "Hermes Agent",
+      "title": "Hermes Persistent Memory",
+      "kind": "官方文档",
+      "summary": "Hermes 用 MEMORY.md 保存长期事实、USER.md 保存用户偏好，并结合会话搜索寻找过去信息。文档解释记忆容量、会话启动时的提示快照及持久更新如何在后续会话中生效。",
+      "takeaway": "精简的长期记忆与按需会话检索互补；修改磁盘记忆与当前提示缓存是不同过程。",
+      "note": "第 13 章比较记忆机制；重启 Gateway 不一定新建会话，不能假定修改记忆后所有已有上下文立即整体刷新。"
+    },
+    {
+      "id": "source-46",
+      "url": "https://hermes-agent.nousresearch.com/docs/user-guide/features/skills",
+      "group": "Hermes Agent",
+      "title": "Hermes Skills System",
+      "kind": "官方文档",
+      "summary": "技能文档描述程序性知识的存储、发现、查看和按需加载，也涵盖从完成任务中创建或更新技能、通过 /learn 整理资料及使用技能社区资源。仓库自带技能与可自动整理的用户技能有不同管理边界。",
+      "takeaway": "事实记忆记录“是什么”，技能保存“怎么做”；两者在学习和复用流程中承担不同角色。",
+      "note": "第 13 章据此讨论持续积累流程；创建技能不等于模型参数训练，也不意味着流程已经正确验收。"
+    },
+    {
+      "id": "source-47",
+      "url": "https://github.com/NousResearch/hermes-agent/blob/d0288be5b3330d2442e3907185b8e9d0958297bb/agent/conversation_loop.py",
+      "group": "Hermes Agent",
+      "title": "Hermes agent/conversation_loop.py",
+      "kind": "固定版本源码",
+      "summary": "该文件协调一次会话的准备、模型调用与工具回合，处理重试、后备方案、上下文压缩、预算和回合后钩子。部分具体操作继续委托给其他模块，构成 AIAgent 运行的主流程。",
+      "takeaway": "主循环同时承担资源控制、失败路径和回合生命周期，工具调用只是其中一环。",
+      "note": "链接固定在 commit d0288be；用于核对第 13 章控制流，不能只看文件名就忽略其调用的其他模块。"
+    },
+    {
+      "id": "source-48",
+      "url": "https://github.com/NousResearch/hermes-agent/blob/d0288be5b3330d2442e3907185b8e9d0958297bb/agent/memory_manager.py",
+      "group": "Hermes Agent",
+      "title": "Hermes agent/memory_manager.py",
+      "kind": "固定版本源码",
+      "summary": "MemoryManager 协调内置记忆和可选外部记忆提供者，规范化接口及数据，并在会话生命周期中处理记忆加载、更新和压缩前检查点等操作。它是记忆能力的管理接口。",
+      "takeaway": "跨会话记忆要有明确的提供者、持久写入和生命周期，不能仅靠模型声称记住了。",
+      "note": "链接固定在 commit d0288be；具体后端能力依赖配置，不应把可选外部提供者描述为每次运行必用的组件。"
+    },
+    {
+      "id": "source-49",
+      "url": "https://github.com/NousResearch/hermes-agent/blob/d0288be5b3330d2442e3907185b8e9d0958297bb/tools/delegate_tool.py",
+      "group": "Hermes Agent",
+      "title": "Hermes tools/delegate_tool.py",
+      "kind": "固定版本源码",
+      "summary": "委派工具创建具有聚焦提示、独立对话和受限工具集的子 AIAgent，管理任务标识、预算、结果摘要及并行执行路径。代码还处理子任务数据库句柄和可选 worktree 等工作区设置。",
+      "takeaway": "子任务需要上下文隔离、工具约束和明确汇报；主 Agent 通过摘要接收成果。",
+      "note": "链接固定在 commit d0288be；独立对话不自动隔离文件系统，实际并发安全仍取决于工具后端和工作区设置。"
+    },
+    {
+      "id": "source-50",
+      "url": "https://hermes-agent.nousresearch.com/docs/user-guide/security",
+      "group": "Hermes Agent",
+      "title": "Hermes Security",
+      "kind": "官方文档",
+      "summary": "安全文档覆盖消息接入的允许名单与配对、危险命令审批、文件和容器安全、MCP 凭据、上下文与会话处理等控制。不同审批模式和终端后端提供不同的保护范围。",
+      "takeaway": "认证、审批与执行隔离是不同层，需要按实际入口和后端组合配置。",
+      "note": "第 13 章说明本地执行并不自动隔离；危险命令识别或辅助模型判断不是操作系统级安全边界。"
+    },
+    {
+      "id": "source-51",
+      "url": "https://code.claude.com/docs/en/memory",
+      "group": "Claude Code",
+      "title": "Claude Code Memory",
+      "kind": "官方文档",
+      "summary": "文档区分由人维护的 CLAUDE.md 项目指令与自动记忆，说明作用域、加载方式和资料组织。项目规范、常用命令、约定与用户偏好可成为后续会话可读取的上下文。",
+      "takeaway": "持久文件让项目知识可重复使用，但指令范围与内容长度会影响实际加载和遵循。",
+      "note": "第 13 章据此比较项目记忆；指令文件是行为指导，不能作为阻止越权操作的安全机制。"
+    },
+    {
+      "id": "source-52",
+      "url": "https://code.claude.com/docs/en/sub-agents",
+      "group": "Claude Code",
+      "title": "Claude Code Subagents",
+      "kind": "官方文档",
+      "summary": "子 Agent 文档说明如何为特定任务配置独立上下文、模型、提示、工具和权限，并将结果汇报给主会话。不同启动或分叉方式决定是否带入已有会话信息。",
+      "takeaway": "独立上下文适合探索或专门任务，能把大量中间过程留在子任务侧。",
+      "note": "第 13 章比较委派；上下文独立不等于拥有独立 OS 环境，主会话仍需对结果进行验证与整合。"
+    },
+    {
+      "id": "source-53",
+      "url": "https://code.claude.com/docs/en/sandboxing",
+      "group": "Claude Code",
+      "title": "Claude Code Sandboxing",
+      "kind": "官方文档",
+      "summary": "文档解释 Bash 工具及其子进程的文件系统和网络隔离，在不同平台使用相应 OS 机制，并说明配置、边界和与执行权限的配合。限制可以减少命令执行对宿主环境的影响。",
+      "takeaway": "执行前是否允许一个命令，与允许后命令能访问什么，是两类互补控制。",
+      "note": "第 13 章区分审批与沙箱；这里的 shell 隔离不能自动覆盖全部远程 MCP 服务或外部系统副作用。"
+    },
+    {
+      "id": "source-54",
+      "url": "https://code.claude.com/docs/en/how-claude-code-works#undo-changes-with-checkpoints",
+      "group": "Claude Code",
+      "title": "Claude Code Checkpoints",
+      "kind": "官方文档章节",
+      "summary": "该章节说明文件修改检查点及回退能力：可以回到较早的会话或代码状态，以撤销当前工作中的某些修改。检查点用于交互式试验和恢复，与 Git 提交记录承担不同职责。",
+      "takeaway": "文件快照能帮助撤销局部编辑，长期版本管理仍需要 Git。",
+      "note": "链接定位工作原理页中的检查点段落；检查点不保证撤销远程 API、数据库或其他工具产生的外部副作用。"
+    },
+    {
+      "id": "source-55",
+      "url": "https://developers.openai.com/codex/guides/agents-md/",
+      "group": "Codex",
+      "title": "Custom instructions with AGENTS.md",
+      "kind": "官方文档",
+      "summary": "Codex 从全局配置和仓库路径逐层发现指令文件，每个目录按 override、普通文件及配置的候选名称选择，再合并进上下文。文档说明目录作用域、优先顺序与总字节预算。",
+      "takeaway": "项目指令可以按目录细化，读取顺序和预算决定模型收到哪些规则。",
+      "note": "第 13 章据此解释项目规范注入；AGENTS.md 提供指导，不能替代工具权限、沙箱或代码检查。"
+    },
+    {
+      "id": "source-56",
+      "url": "https://developers.openai.com/codex/skills/",
+      "group": "Codex",
+      "title": "Codex Skills",
+      "kind": "官方文档",
+      "summary": "技能文档介绍 SKILL.md 的格式、目录发现、触发与按需使用。运行时先提供名称、描述和路径等元数据，选择技能后再读取正文以及需要的脚本或资源。",
+      "takeaway": "渐进式加载让流程复用与有限上下文管理结合起来。",
+      "note": "第 13 章比较 Skills 机制；是否采用技能及执行脚本还取决于任务、内容、权限和当前产品支持。"
+    },
+    {
+      "id": "source-57",
+      "url": "https://developers.openai.com/codex/multi-agent/",
+      "group": "Codex",
+      "title": "Codex Multi-agent / Subagents",
+      "kind": "官方文档",
+      "summary": "文档介绍把聚焦任务交给独立子 Agent，保留各自上下文，再向父 Agent 汇报结果的工作方式，并说明协作配置和资源限制。多个任务可在条件允许时并行推进。",
+      "takeaway": "适合把可独立验证的探索或实施工作分开，父 Agent 负责合并判断与验收。",
+      "note": "第 13 章分析上下文隔离与协作；并行仍受预算、依赖和共享工作区约束，不是 Agent 数量越多越快。"
+    },
+    {
+      "id": "source-58",
+      "url": "https://developers.openai.com/codex/agent-approvals-security/",
+      "group": "Codex",
+      "title": "Codex Agent approvals & security",
+      "kind": "官方文档",
+      "summary": "这页区分审批政策与沙箱：前者决定何时询问用户，后者限制工具进程的文件与网络访问。文档解释不同执行模式、工作区范围和平台隔离机制，以及网络与写入相关配置。",
+      "takeaway": "审批和隔离必须分别理解；允许执行不代表进程拥有无限访问范围。",
+      "note": "第 13 章据此比较执行边界；实际保护取决于平台、版本与配置，不能只凭模式名称判断所有能力。"
+    },
+    {
+      "id": "source-59",
+      "url": "https://developers.openai.com/codex/app-server/",
+      "group": "Codex",
+      "title": "Codex App-server",
+      "kind": "官方文档",
+      "summary": "App-server 为应用集成提供双向 JSON-RPC 接口，用 thread、turn、item 表示会话、一次运行与流式输出单元。客户端接收事件，也响应服务端的审批请求；文档涵盖会话恢复、压缩和版本化 schema 等接口。",
+      "takeaway": "把执行运行时与 UI 分开时，需要管理流式生命周期、持久会话和交互审批。",
+      "note": "第 13 章说明它不是 MCP；请求获接受与工作完成是不同事件，传输方式及实验能力要按当前 schema 核对。"
+    }
+  ]
+}

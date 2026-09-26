@@ -57,7 +57,58 @@ def md_to_html(source):
     )
 
 
+def get_sources():
+    data = json.loads((ROOT / "source_summaries.json").read_text(encoding="utf-8"))
+    sources = {}
+    ids = set()
+    for source in data["sources"]:
+        for field in ("id", "url", "group", "title", "kind", "summary", "takeaway", "note"):
+            if not isinstance(source.get(field), str) or not source[field].strip():
+                raise ValueError(f"Missing source field {field}: {source.get('url')}")
+        if source["url"] in sources or source["id"] in ids:
+            raise ValueError(f"Duplicate source: {source['url']}")
+        sources[source["url"]] = source
+        ids.add(source["id"])
+    return sources, data["reviewed_on"]
+
+
+def source_card(source, anchor, heading="h4"):
+    return (f'<blockquote class="source-note" id="{esc(anchor)}">'
+            f'<{heading}>{esc(source["title"])}</{heading}>'
+            f'<p class="source-meta">{esc(source["kind"])}</p>'
+            f'<p><strong>主要内容：</strong>{esc(source["summary"])}</p>'
+            f'<p><strong>核心要点：</strong>{esc(source["takeaway"])}</p>'
+            f'<p><strong>阅读提示：</strong>{esc(source["note"])}</p>'
+            f'<p><a href="{esc(source["url"])}">阅读原文 ↗</a></p></blockquote>')
+
+
+def add_source_notes(body, sources):
+    """Keep every external reference beside a visible, centrally maintained summary."""
+    parts = []
+    for index, part in enumerate(re.split(r'(?=<h2 id=")', body)):
+        used = {}
+
+        def annotate(match):
+            url = html.unescape(match.group(1))
+            if url not in sources:
+                raise ValueError(f"External reference needs a summary: {url}")
+            source = sources[url]
+            anchor = f'{source["id"]}-section-{index}'
+            used[url] = (source, anchor)
+            return (match.group(0) + f' <a class="source-jump" href="#{anchor}"'
+                    f' aria-label="查看 {esc(source["title"])} 的内容摘要">[导读]</a>')
+
+        part = re.sub(r'<a\b[^>]*href="(https?://[^\"]+)"[^>]*>.*?</a>', annotate, part, flags=re.S)
+        if used:
+            cards = "".join(source_card(source, anchor) for source, anchor in used.values())
+            part += ('<aside class="source-notes" aria-label="本节引用导读">'
+                     '<h3>本节引用导读</h3>' + cards + '</aside>')
+        parts.append(part)
+    return "".join(parts)
+
+
 def get_pages():
+    sources, _ = get_sources()
     source = (ROOT / "guide_zh.md").read_text(encoding="utf-8")
     lines = source.splitlines()
     starts = [i for i, line in enumerate(lines) if re.match(r"^# 第 \d+ 章", line)]
@@ -71,7 +122,7 @@ def get_pages():
         body_source = "\n".join(lines[start + 1:starts[index + 1] if index + 1 < len(starts) else len(lines)])
         if index == 0:
             body_source = "\n".join(lines[1:start]) + "\n\n" + body_source
-        body = md_to_html(body_source)
+        body = add_source_notes(md_to_html(body_source), sources)
         headings = [(m.group(1), strip_html(m.group(2))) for m in re.finditer(
             r'<h2 id="([^"]+)">(.*?)</h2>', body, flags=re.S
         )]
@@ -104,6 +155,10 @@ def navigation(pages, active):
     nav = [f'<a class="nav-link nav-home{home_class}" href="index.html"'
            f'{home_current}>'
            '<span class="nav-number nav-symbol">⌂</span><span>首页 · 学习地图</span></a>']
+    selected = active == "sources.html"
+    current = ' aria-current="page"' if selected else ""
+    nav.append(f'<a class="nav-link{" active" if selected else ""}" href="sources.html"{current}>'
+               '<span class="nav-number nav-symbol">≡</span><span>引用导读 · 内容汇总</span></a>')
     for group, numbers in GROUPS:
         items = []
         for page in pages:
@@ -129,6 +184,7 @@ def shell(title, description, body, pages, active, toc="", page_class=""):
   <meta name="description" content="{esc(description)}"><meta name="theme-color" content="#f8faf8">
   <title>{esc(title)} · Agent Guide</title>
   <link rel="stylesheet" href="assets/pygments.css"><link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/sources.css">
   <script>try{{const saved=localStorage.getItem("theme");document.documentElement.dataset.theme=saved||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}}catch(e){{}}</script>
 </head>
 <body class="{page_class}">
@@ -213,7 +269,7 @@ def home(pages):
       <section class="home-section" id="roadmap"><div class="section-heading"><span>01 / LEARNING PATH</span>
         <h2>从哪里开始？</h2><p>按基础、能力、系统和前沿逐步推进。</p></div><div class="route-grid">{route_cards}</div></section>
       <section class="home-section" id="chapters"><div class="section-heading"><span>02 / HANDBOOK</span>
-        <h2>Agent 工程实践指南</h2><p>{len(pages)} 章从传统 Agent 走到前沿工程、实习项目与产品技术对比。</p></div>
+        <h2>Agent 工程实践指南</h2><p>{len(pages)} 章从传统 Agent 走到前沿工程、实习项目与产品技术对比。所有外部引用均附内容导读，亦可查看 <a href="sources.html">引用内容汇总</a>。</p></div>
         <div class="chapter-grid">{chapters}</div></section>
       <section class="home-section" id="more"><div class="section-heading"><span>03 / RELATED GUIDE</span>
         <h2>继续阅读</h2><p>模型推理的底层实现与系统性能，见 Infra Guide。</p></div>
@@ -222,12 +278,43 @@ def home(pages):
     return shell("首页", "从传统智能体到 Agent 工程实践的中文学习指南", body, pages, "index.html", page_class="home-page")
 
 
+def sources_page(sources, reviewed_on, pages):
+    overview = md_to_html((ROOT / "sources_overview_zh.md").read_text(encoding="utf-8"))
+    groups = {}
+    search = [{"title": "引用导读 · 内容汇总", "url": "sources.html", "anchor": "",
+               "heading": "这些资料合起来讲了什么", "text": strip_html(overview)}]
+    for source in sources.values():
+        groups.setdefault(source["group"], []).append(source)
+        search.append({"title": "引用导读 · 内容汇总", "url": "sources.html", "anchor": source["id"],
+                       "heading": source["title"], "text": " ".join(source[k] for k in
+                       ("kind", "summary", "takeaway", "note"))})
+    content = [overview]
+    toc_links = ['<a href="#reading-overview">这些资料合起来讲了什么</a>']
+    for index, (group, entries) in enumerate(groups.items()):
+        anchor = f"source-group-{index}"
+        toc_links.append(f'<a href="#{anchor}">{esc(group)} · {len(entries)} 项</a>')
+        content.append(f'<h2 id="{anchor}">{esc(group)}</h2>')
+        content.extend(source_card(source, source["id"], "h3") for source in entries)
+    body = ('<div class="article-wrap"><div class="breadcrumb"><a href="index.html">首页</a>'
+            '<span>／</span>引用导读</div><article class="article"><header class="article-header">'
+            '<span class="eyebrow">AGENT GUIDE / SOURCE NOTES</span><h1>引用导读 · 内容汇总</h1>'
+            f'<p class="article-lead">{len(sources)} 份资料的主要内容、核心要点与阅读提示。先读综合总结，再按主题查看每份原文讲什么。</p>'
+            f'<div class="article-meta">资料核对：{esc(reviewed_on)} · 导读为中文转述</div></header>'
+            '<div class="prose">' + "".join(content) + '</div></article></div>')
+    toc = ('<aside class="page-toc" aria-label="本页目录"><p>本页目录</p><nav>'
+           + "".join(toc_links) + '</nav></aside>')
+    return shell("引用导读 · 内容汇总", "Agent 指南全部引用来源的中文内容摘要与综合总结", body,
+                 pages, "sources.html", toc, "article-page"), search
+
+
 def build():
     pages = get_pages()
+    sources, reviewed_on = get_sources()
     if OUT.exists():
         shutil.rmtree(OUT)
     OUT.mkdir(parents=True)
     shutil.copytree(INFRA_ASSETS, OUT / "assets")
+    shutil.copyfile(ROOT / "sources.css", OUT / "assets" / "sources.css")
     shutil.copytree(ROOT / "figures", OUT / "figures")
     shutil.copytree(ROOT / "examples", OUT / "examples", ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
     light = HtmlFormatter(style="friendly").get_style_defs(".codehilite")
@@ -238,8 +325,11 @@ def build():
     for page in pages:
         (OUT / page["url"]).write_text(article(page, pages), encoding="utf-8")
     index = [{"title": p["title"], "url": p["url"], **s} for p in pages for s in p["sections"]]
+    source_html, source_search = sources_page(sources, reviewed_on, pages)
+    (OUT / "sources.html").write_text(source_html, encoding="utf-8")
+    index.extend(source_search)
     (OUT / "search-index.json").write_text(json.dumps(index, ensure_ascii=False), encoding="utf-8")
-    print(f"Built {len(pages) + 1} pages in {OUT}")
+    print(f"Built {len(pages) + 2} pages with {len(sources)} source summaries in {OUT}")
 
 
 if __name__ == "__main__":
