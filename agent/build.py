@@ -18,7 +18,7 @@ GROUPS = [
     ("基础与经典方法", range(0, 4)),
     ("核心能力", range(4, 7)),
     ("系统工程", range(7, 11)),
-    ("前沿与求职", range(11, 13)),
+    ("前沿与求职", range(11, 14)),
 ]
 DESCRIPTIONS = [
     "观察、决策、行动与反馈的完整闭环",
@@ -32,8 +32,9 @@ DESCRIPTIONS = [
     "工具协议与独立 Agent 通信边界",
     "轨迹、成功率、成本与环境化评测",
     "注入防护、最小权限与可观测性",
-    "长任务、计算机使用、代码 Agent 与研究问题",
+    "Harness、Context Engineering、Skills、恢复与 Agentic RL",
     "可展示项目、复习路线与高频问答",
+    "OpenCode、OpenClaw、Hermes、Claude Code 与 Codex 技术拆解和对比",
 ]
 
 
@@ -178,7 +179,7 @@ def home(pages):
         ("01", "基础与经典", "闭环、传统策略与 ReAct", "ch00.html", "第 0–3 章", "route-map"),
         ("02", "核心能力", "工具、检索、记忆与上下文", "ch04.html", "第 4–6 章", "route-kernel"),
         ("03", "系统工程", "多 Agent、协议、评测与安全", "ch07.html", "第 7–10 章", "route-system"),
-        ("04", "前沿与求职", "研究阅读、项目和面试", "ch11.html", "第 11–12 章", "route-practice"),
+        ("04", "前沿与求职", "Harness、前沿工程与五家 Agent 对比", "ch11.html", "第 11–13 章", "route-practice"),
     ]
     route_cards = "".join(
         f'<a class="route-card {css}" href="{url}"><span class="route-index">{number} / {span}</span>'
@@ -195,12 +196,12 @@ def home(pages):
     body = f'''<div class="home-wrap"><section class="home-hero">
       <div class="hero-copy"><span class="hero-eyebrow"><span class="eyebrow-line"></span> AGENT / LEARNING GUIDE</span>
         <h1>从反馈闭环，<br><em>走到可靠 Agent。</em></h1>
-        <p>沿着「传统 Agent → 工具循环 → 检索与协作 → 评测与安全」的路径，学习 Agent 的原理、实现和面试重点。</p>
+        <p>沿着「传统 Agent → 工具循环 → 检索与协作 → Harness 与前沿工程」的路径，学习 Agent 的原理、实现和面试重点。</p>
         <div class="hero-actions"><a class="button button-primary" href="ch00.html">开始学习 <span aria-hidden="true">↗</span></a>
           <a class="button button-secondary" href="#chapters">浏览章节 <span aria-hidden="true">↓</span></a></div>
       </div><div class="hero-visual" aria-label="Agent 学习路线四层结构">
         <div class="visual-header"><span>AGENT STACK</span><span class="visual-pulse"></span></div>
-        <div class="visual-layers"><div><span>04</span><strong>评测与安全</strong><small>验收 · 权限 · 观测</small></div>
+        <div class="visual-layers"><div><span>04</span><strong>Harness 工程</strong><small>恢复 · 验收 · 权限</small></div>
           <div><span>03</span><strong>系统能力</strong><small>检索 · 上下文 · 协作</small></div>
           <div><span>02</span><strong>LLM Agent</strong><small>工具 · 规划 · 反思</small></div>
           <div><span>01</span><strong>传统智能体</strong><small>观察 · 决策 · 反馈</small></div></div>
@@ -212,7 +213,7 @@ def home(pages):
       <section class="home-section" id="roadmap"><div class="section-heading"><span>01 / LEARNING PATH</span>
         <h2>从哪里开始？</h2><p>按基础、能力、系统和前沿逐步推进。</p></div><div class="route-grid">{route_cards}</div></section>
       <section class="home-section" id="chapters"><div class="section-heading"><span>02 / HANDBOOK</span>
-        <h2>Agent 工程实践指南</h2><p>十三章从传统 Agent 走到可评测的工程系统与实习项目。</p></div>
+        <h2>Agent 工程实践指南</h2><p>{len(pages)} 章从传统 Agent 走到前沿工程、实习项目与产品技术对比。</p></div>
         <div class="chapter-grid">{chapters}</div></section>
       <section class="home-section" id="more"><div class="section-heading"><span>03 / RELATED GUIDE</span>
         <h2>继续阅读</h2><p>模型推理的底层实现与系统性能，见 Infra Guide。</p></div>

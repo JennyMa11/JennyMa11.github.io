@@ -16,3 +16,7 @@ npm run preview
 可运行的最小工具循环：`python3 agent/examples/mini_agent.py`。这是离线教学示例，用确定性策略代替在线模型。
 
 内容按传统 Agent、LLM Agent、系统工程、前沿与求职组织。事实和版本信息都链接至论文或官方规范；引用 [Hello-Agents](https://github.com/datawhalechina/hello-agents) 作为延伸阅读，没有复制其正文或图片。
+
+第 11 章展开 Harness Engineering、长任务检查点与恢复、Context Engineering、Agent Skills、测试时计算和 Agentic RL，提供同模型同预算的对照实验设计；新增资料于 2026-09-26 核对。
+
+第 13 章拆解 OpenCode、OpenClaw、Hermes Agent、Claude Code 与 Codex，比较执行循环、上下文、记忆、Skills、权限、子任务与部署边界；包含固定 commit 的源码入口与公平评测设计。产品机制分析不代表已实测性能排名。
