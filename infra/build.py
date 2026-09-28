@@ -29,19 +29,49 @@ CHAPTER_DESCS = {
     4: "RMSNorm、RoPE、MRoPE 与算子融合",
     5: "GQA/MLA、在线 Softmax 与 FlashAttention",
     6: "KV 块分配、分页寻址与前缀复用",
-    7: "Prefill/Decode 单请求生成与显存账本",
-    8: "Token/KV 双预算、分块预填充与状态机",
-    9: "FP8/INT8/INT4、量化校验与投机验证",
-    10: "Stream、Event、CUDA Graph 与执行重叠",
-    11: "TP/PP/EP、NCCL、MoE 与 PD 分离",
-    12: "vLLM、SGLang、TensorRT-LLM 与 llama.cpp",
-    13: "Roofline、Nsight、Warp Stall 与定位流程",
-    14: "逐层逐 Token 对比与第一处分歧定位",
-    15: "CUDA、Kernel、Serving 与分布式故障模式",
-    16: "从 API 到最终 Token 的完整工程复盘",
-    17: "解释、实现和调试能力验收",
-    18: "GPU/NPU 软件栈、算子迁移、精度定位与验收",
+    7: "自回归生成、KV 生命周期、性能指标与 Roofline",
+    8: "分页、连续批处理、前缀缓存、图与编译",
+    9: "vLLM 快速入门、V1 架构、调度源码与调优",
+    10: "量化原理、低比特 Kernel、KV 压缩与部署选型",
+    11: "精确采样、Draft Tree、收益边界与 vLLM 实战",
+    12: "TP、PP、DP、EP 与 Ray 多节点实践",
+    13: "阶段互扰、KV 传输、Goodput 与资源池配比",
+    14: "结构化输出、工具调用、LoRA、多模态与采样",
+    15: "指标、Benchmark、Nsight 与性能回归门禁",
+    16: "Kubernetes、监控、路由、扩缩容与容量成本",
+    17: "选型决策、技术叠加与端到端交付",
+    18: "端侧约束、Runtime、ExecuTorch 与稳态性能",
+    19: "逐层逐 Token 对比与第一处分歧定位",
+    20: "CUDA、Kernel、Serving 与分布式故障模式",
+    21: "解释、实现和调试能力验收",
+    22: "GPU/NPU 软件栈、算子迁移、精度定位与验收",
+    23: "DeepSeek V3.2/V4/V4.1 技术报告、长上下文缓存与同期架构",
 }
+
+HANDBOOK = ROOT / "handbook"
+THEMES = [
+    ("学习地图", range(0, 1)),
+    ("GPU 与算子", range(1, 4)),
+    ("模型与缓存", range(4, 7)),
+    ("推理基础与引擎", range(7, 10)),
+    ("加速与分布式", range(10, 14)),
+    ("生产服务与端侧", range(14, 19)),
+    ("排障、适配与前沿报告", range(19, 24)),
+]
+
+
+def theme_for(number):
+    if number is None:
+        return "资料附录"
+    return next(name for name, numbers in THEMES if number in numbers)
+
+
+def title_and_body(path):
+    source = read(path)
+    match = re.match(r"^# (.+)\n", source)
+    if not match:
+        raise ValueError(f"Expected a level-one title in {path}")
+    return match.group(1).strip(), source[match.end():].strip()
 
 
 def read(path):
@@ -61,8 +91,8 @@ def plain(source):
 
 def sections(body, title):
     result = []
-    for part in re.split(r'(?=<h2 id=")', body):
-        heading = re.match(r'<h2 id="([^"]+)">(.*?)</h2>', part, flags=re.S)
+    for part in re.split(r'(?=<h[23] id=")', body):
+        heading = re.match(r'<h[23] id="([^"]+)">(.*?)</h[23]>', part, flags=re.S)
         text = plain(part)
         if text:
             result.append({
@@ -97,28 +127,28 @@ def make_page(url, group, title, desc, source, number=None):
 
 
 def load_pages():
-    source = read(ROOT / "inference_accel_handbook_zh.md")
-    lines = source.splitlines()
-    starts = [
-        i for i, line in enumerate(lines)
-        if re.match(r"^# (第 \d+ 章|附录)", line)
-    ]
-    if not starts:
-        raise ValueError("Handbook has no chapter headings")
-    preface = "\n".join(lines[:starts[0]])
-    preface = re.sub(r"^# .+\n", "", preface, count=1)
     pages = []
-    for index, start in enumerate(starts):
-        end = starts[index + 1] if index + 1 < len(starts) else len(lines)
-        title = lines[start][2:].strip()
+    chapter_dirs = sorted(HANDBOOK.glob("ch[0-9][0-9]")) + [HANDBOOK / "appendix"]
+    for chapter_dir in chapter_dirs:
+        title, source = title_and_body(chapter_dir / "index.md")
         match = re.match(r"第 (\d+) 章", title)
         number = int(match.group(1)) if match else None
+        theme = theme_for(number)
         url = f"ch{number:02d}.html" if number is not None else "appendix.html"
         desc = CHAPTER_DESCS.get(number, "术语与补充资料")
-        chapter_source = "\n".join(lines[start + 1:end])
-        if number == 0 and preface.strip():
-            chapter_source = preface + "\n\n" + chapter_source
-        pages.append(make_page(url, "知识手册", title, desc, chapter_source, number))
+        overview = make_page(url, theme, title, desc, source, number)
+        overview.update(kind="overview", chapter=number, short_title=re.sub(r"^第 \d+ 章\s*", "", title))
+        pages.append(overview)
+        for path in sorted(chapter_dir.glob("[0-9][0-9]-*.md")):
+            article_title, article_source = title_and_body(path)
+            section = int(path.name[:2])
+            article_url = f"ch{number:02d}-{section:02d}.html" if number is not None else f"appendix-{section:02d}.html"
+            article = make_page(article_url, theme, article_title, desc, article_source, number)
+            article.update(
+                kind="article", chapter=number, short_title=re.sub(r"^(?:\d+(?:\.\d+)*|附录 [A-Z])\s*", "", article_title).strip(" ·"),
+                old_anchor=slugify_unicode(article_title, "-"),
+            )
+            pages.append(article)
 
     extras = [
         ("interview_qa_zh.md", "项目实测", "qa.html", "nano-vLLM 项目实测与面试问答"),
@@ -130,7 +160,9 @@ def load_pages():
         title_match = re.search(r"^# (.+)$", source, flags=re.M)
         title = title_match.group(1).strip() if title_match else filename
         source = re.sub(r"^# .+\n", "", source, count=1)
-        pages.append(make_page(url, group, title, desc, source))
+        page = make_page(url, group, title, desc, source)
+        page.update(kind="extra", chapter=None, short_title=title)
+        pages.append(page)
     return pages
 
 
@@ -140,23 +172,42 @@ def e(value):
 
 def navigation(pages, active):
     groups = []
-    for group in ("知识手册", "项目实测", "延伸笔记"):
-        items = []
+    for group in [name for name, _ in THEMES] + ["资料附录"]:
+        chapters = [page for page in pages if page["group"] == group and page["kind"] == "overview"]
+        chapter_items = []
+        for overview in chapters:
+            children = [page for page in pages if page["kind"] == "article" and page["chapter"] == overview["chapter"]]
+            if overview["chapter"] is None:
+                children = [page for page in children if page["group"] == "资料附录"]
+            is_open = active == overview["url"] or any(active == item["url"] for item in children)
+            links = []
+            for page in [overview] + children:
+                is_active = page["url"] == active
+                current_attr = ' aria-current="page"' if is_active else ""
+                label = "目录" if page["kind"] == "overview" else page["title"].split(" ", 1)[0]
+                links.append(
+                    f'<a class="nav-link{" active" if is_active else ""}" href="{e(page["url"])}"{current_attr}>'
+                    f'<span class="nav-number">{e(label)}</span><span>{e(page["short_title"])}</span></a>'
+                )
+            chapter_label = f'{overview["number"]:02d}' if overview["number"] is not None else '↗'
+            chapter_items.append(
+                f'<details class="nav-chapter"{" open" if is_open else ""}>'
+                f'<summary><span class="nav-number">{chapter_label}</span><span>{e(overview["short_title"])}</span></summary>'
+                f'<div class="nav-article-list">{"".join(links)}</div></details>'
+            )
+        groups.append(f'<div class="nav-group"><p class="nav-heading">{e(group)}</p>{"".join(chapter_items)}</div>')
+    for group in ("项目实测", "延伸笔记"):
+        links = []
         for page in pages:
             if page["group"] != group:
                 continue
             is_active = page["url"] == active
             current_attr = ' aria-current="page"' if is_active else ""
-            label = (
-                f'<span class="nav-number">{page["number"]:02d}</span>'
-                if page["number"] is not None else '<span class="nav-number nav-symbol">↗</span>'
+            links.append(
+                f'<a class="nav-link{" active" if is_active else ""}" href="{e(page["url"])}"{current_attr}>'
+                f'<span class="nav-number nav-symbol">↗</span><span>{e(page["title"])}</span></a>'
             )
-            items.append(
-                f'<a class="nav-link{" active" if is_active else ""}" '
-                f'href="{e(page["url"])}"{current_attr}>'
-                f'{label}<span>{e(page["title"])}</span></a>'
-            )
-        groups.append(f'<div class="nav-group"><p class="nav-heading">{group}</p>{"".join(items)}</div>')
+        groups.append(f'<div class="nav-group"><p class="nav-heading">{e(group)}</p>{"".join(links)}</div>')
     home_class = " active" if active == "index.html" else ""
     home_current_attr = ' aria-current="page"' if home_class else ""
     return (
@@ -234,6 +285,16 @@ def render_article(page, pages):
             )
     pagination += "</nav>"
     number = f' · 第 {page["number"]:02d} 章' if page["number"] is not None else ""
+    article_list = ""
+    if page["kind"] == "overview":
+        children = [item for item in pages if item["kind"] == "article" and item["chapter"] == page["chapter"] and item["group"] == page["group"]]
+        cards = "".join(
+            f'<a class="article-list-card" id="{e(item["old_anchor"])}" href="{e(item["url"])}">'
+            f'<strong>{e(item["title"])}</strong><small>约 {item["minutes"]} 分钟阅读</small>'
+            '<span aria-hidden="true">↗</span></a>'
+            for item in children
+        )
+        article_list = f'<section class="article-list" aria-label="本章小文章"><h2>本章小文章</h2><div class="article-list-grid">{cards}</div></section>'
     body = f'''
       <div class="article-wrap">
         <div class="breadcrumb"><a href="index.html">首页</a><span>／</span>{e(page["group"])}{number}</div>
@@ -242,20 +303,21 @@ def render_article(page, pages):
             <h1>{e(page["title"])}</h1><p class="article-lead">{e(page["desc"])}</p>
             <div class="article-meta"><span>约 {page["minutes"]} 分钟阅读</span><span class="meta-dot">·</span><span>持续更新</span></div>
           </header>
-          <div class="prose">{page["body"]}</div>
+          <div class="prose">{page["body"]}</div>{article_list}
         </article>{pagination}
       </div>'''
     return shell(page["title"], page["desc"], body, pages, page["url"], toc, "article-page")
 
 
 def render_home(pages):
-    chapters = [page for page in pages if page["number"] is not None]
-    extras = [page for page in pages if page["group"] != "知识手册"]
+    chapters = [page for page in pages if page["kind"] == "overview" and page["number"] is not None]
+    articles = [page for page in pages if page["kind"] == "article"]
+    extras = [page for page in pages if page["kind"] == "extra"]
     routes = [
         ("01", "硬件与算子", "从 GPU 执行模型写到 GEMM、Softmax 和 Triton。", "ch01.html", "第 1–3 章", "route-map"),
-        ("02", "模型与缓存", "实现 Transformer 算子、Attention 和分页 KV。", "ch04.html", "第 4–7 章", "route-kernel"),
-        ("03", "服务与分布式", "追踪调度、量化、运行时和多卡通信。", "ch08.html", "第 8–12 章", "route-system"),
-        ("04", "测量与排障", "从 Profiling、逐层比对到完整请求复盘。", "ch13.html", "第 13–17 章", "route-practice"),
+        ("02", "模型与缓存", "实现 Transformer 算子、Attention 和分页 KV。", "ch04.html", "第 4–6 章", "route-kernel"),
+        ("03", "推理优化模块", "按 12 章大纲学习引擎、量化、投机、部署与端侧。", "ch07.html", "第 7–18 章", "route-system"),
+        ("04", "排障、适配与前沿报告", "逐层定位、故障复盘、GPU/NPU 适配和 DeepSeek 报告精读。", "ch19.html", "第 19–23 章", "route-practice"),
     ]
     route_cards = "".join(
         f'<a class="route-card {css}" href="{url}"><span class="route-index">{number} / {label}</span>'
@@ -263,12 +325,15 @@ def render_home(pages):
         '<span class="route-arrow">开始阅读 <span aria-hidden="true">→</span></span></a>'
         for number, title, desc, url, label, css in routes
     )
-    chapter_cards = "".join(
-        f'<a class="chapter-card" href="{e(page["url"])}">'
-        f'<span class="chapter-number">{page["number"]:02d}</span>'
-        f'<span class="chapter-copy"><strong>{e(page["title"])}</strong><small>{e(page["desc"])}</small></span>'
-        '<span class="chapter-arrow" aria-hidden="true">↗</span></a>'
-        for page in chapters
+    chapter_groups = "".join(
+        f'<div class="chapter-topic"><h3>{e(group)}</h3><div class="chapter-grid">' + "".join(
+            f'<a class="chapter-card" href="{e(page["url"])}">'
+            f'<span class="chapter-number">{page["number"]:02d}</span>'
+            f'<span class="chapter-copy"><strong>{e(page["short_title"])}</strong><small>{e(page["desc"])}</small></span>'
+            '<span class="chapter-arrow" aria-hidden="true">↗</span></a>'
+            for page in chapters if page["group"] == group
+        ) + '</div></div>'
+        for group, _ in THEMES
     )
     extra_cards = "".join(
         f'<a class="extra-card" href="{e(page["url"])}"><span>{e(page["group"])}</span>'
@@ -293,9 +358,9 @@ def render_home(pages):
             <div class="visual-footer"><span>从原理到实现</span><span>↓</span></div>
           </div>
         </section>
-        <div class="home-stats"><div><strong>{len(chapters):02d}</strong><span>系统章节</span></div><div><strong>{len(list((ROOT / "figures").glob("*.png"))):02d}</strong><span>原理配图</span></div><div><strong>04</strong><span>学习阶段</span></div></div>
+        <div class="home-stats"><div><strong>{len(chapters):02d}</strong><span>章节目录</span></div><div><strong>{len(articles):02d}</strong><span>独立小文章</span></div><div><strong>{len(THEMES):02d}</strong><span>主题分组</span></div></div>
         <section class="home-section" id="roadmap"><div class="section-heading"><span>01 / LEARNING PATH</span><h2>从哪里开始？</h2><p>按层次推进，也可以直接跳到你关心的主题。</p></div><div class="route-grid">{route_cards}</div></section>
-        <section class="home-section" id="chapters"><div class="section-heading"><span>02 / HANDBOOK</span><h2>AI Infra 工程实践指南</h2><p>第 0–18 章沿同一条请求链路，连接硬件、算子、服务、性能、调试与模型适配。</p></div><div class="chapter-grid">{chapter_cards}</div></section>
+        <section class="home-section" id="chapters"><div class="section-heading"><span>02 / HANDBOOK</span><h2>按主题查阅</h2><p>先选大主题和章节，再打开独立小文章。第 7–18 章沿用 AIInfraGuide 模块四的推理优化大纲。</p></div>{chapter_groups}</section>
         <section class="home-section" id="more"><div class="section-heading"><span>03 / MORE TO EXPLORE</span><h2>继续探索</h2><p>项目实践与技术写作笔记。</p></div><div class="extra-grid">{extra_cards}</div></section>
       </div>'''
     return shell("首页", "系统学习 LLM 推理加速的中文笔记", body, pages, "index.html", page_class="home-page")
@@ -311,6 +376,10 @@ def write_assets():
 
 def build():
     pages = load_pages()
+    urls = [page["url"] for page in pages]
+    if len(urls) != len(set(urls)):
+        duplicates = sorted({url for url in urls if urls.count(url) > 1})
+        raise ValueError(f"Duplicate article numbers or chapter URLs: {', '.join(duplicates)}")
     if OUT.exists():
         shutil.rmtree(OUT)
     OUT.mkdir(parents=True)
