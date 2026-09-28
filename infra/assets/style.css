@@ -207,12 +207,13 @@ a { color: inherit; }
 .prose td { background: var(--surface); color: var(--ink-soft); }
 .article-list { margin-top: 40px; }
 .article-list > h2 { margin: 0 0 17px; font-size: 21px; }
-.article-list-grid { display: grid; gap: 10px; }
-.article-list-card { position: relative; display: flex; flex-direction: column; gap: 2px; padding: 15px 42px 15px 17px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); text-decoration: none; scroll-margin-top: 90px; }
+.article-list-grid { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
+.article-list-card { position: relative; display: block; padding: 18px 42px 18px 17px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); text-decoration: none; scroll-margin-top: 90px; }
 .article-list-card:hover { border-color: var(--accent); background: var(--accent-soft); }
-.article-list-card strong { color: var(--ink); font-size: 13px; }
-.article-list-card small { color: var(--muted); font-size: 11px; }
-.article-list-card > span { position: absolute; right: 17px; top: 15px; color: var(--accent); }
+.article-list-card strong { display: block; color: var(--ink); font-size: 15px; line-height: 1.5; }
+.article-list-card br { display: none; }
+.article-list-card small { display: block; margin-top: 7px; color: var(--muted); font-size: 11px; }
+.article-list-card > span { position: absolute; right: 17px; top: 18px; color: var(--accent); }
 .pagination { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 68px; }
 .pagination-link { display: flex; flex-direction: column; gap: 4px; min-height: 89px; padding: 15px 17px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); text-decoration: none; }
 .pagination-link:hover { border-color: var(--accent); }

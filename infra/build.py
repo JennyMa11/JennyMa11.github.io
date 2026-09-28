@@ -2,6 +2,7 @@
 """Build the Infra notes as a self-contained static documentation site."""
 
 import html
+import hashlib
 import json
 import re
 import shutil
@@ -49,6 +50,7 @@ CHAPTER_DESCS = {
 }
 
 HANDBOOK = ROOT / "handbook"
+STYLE_VERSION = hashlib.sha256((HERE / "assets" / "style.css").read_bytes()).hexdigest()[:8]
 THEMES = [
     ("学习地图", range(0, 1)),
     ("GPU 与算子", range(1, 4)),
@@ -228,7 +230,7 @@ def shell(title, description, body, pages, active, toc="", page_class=""):
   <meta name="theme-color" content="#f8faf8">
   <title>{e(title)} · Infra Notes</title>
   <link rel="stylesheet" href="assets/pygments.css">
-  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/style.css?v={STYLE_VERSION}">
   <script>try{{const saved=localStorage.getItem("theme");document.documentElement.dataset.theme=saved||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}}catch(e){{}}</script>
 </head>
 <body class="{page_class}">
@@ -288,13 +290,13 @@ def render_article(page, pages):
     article_list = ""
     if page["kind"] == "overview":
         children = [item for item in pages if item["kind"] == "article" and item["chapter"] == page["chapter"] and item["group"] == page["group"]]
-        cards = "".join(
-            f'<a class="article-list-card" id="{e(item["old_anchor"])}" href="{e(item["url"])}">'
-            f'<strong>{e(item["title"])}</strong><small>约 {item["minutes"]} 分钟阅读</small>'
-            '<span aria-hidden="true">↗</span></a>'
+        cards = "\n".join(
+            f'<li><a class="article-list-card" id="{e(item["old_anchor"])}" href="{e(item["url"])}">'
+            f'<strong>{e(item["title"])}</strong><br><small>约 {item["minutes"]} 分钟阅读</small>'
+            '<span aria-hidden="true">↗</span></a></li>'
             for item in children
         )
-        article_list = f'<section class="article-list" aria-label="本章小文章"><h2>本章小文章</h2><div class="article-list-grid">{cards}</div></section>'
+        article_list = f'<section class="article-list" aria-label="本章小文章"><h2>本章小文章</h2><ul class="article-list-grid">{cards}</ul></section>'
     body = f'''
       <div class="article-wrap">
         <div class="breadcrumb"><a href="index.html">首页</a><span>／</span>{e(page["group"])}{number}</div>
