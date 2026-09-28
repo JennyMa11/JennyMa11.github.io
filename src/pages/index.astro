@@ -13,7 +13,16 @@ const [posts, projects] = await Promise.all([
   getFeaturedProjects(3)
 ]);
 
-const recentPosts = posts.slice(0, 3);
+const learningOrder = [
+  "attention-is-all-you-need-explained",
+  "multi-head-attention-intuition",
+  "transformer-positional-encoding",
+  "speculative-decoding-methods"
+];
+
+const learningPosts = posts
+  .filter((post) => learningOrder.includes(post.slug))
+  .sort((a, b) => learningOrder.indexOf(a.slug) - learningOrder.indexOf(b.slug));
 
 const layers = [
   { number: "04", title: "诊断层", detail: "Profiling · Debug · Bug", href: "/infra/ch15.html" },
@@ -64,13 +73,13 @@ const layers = [
   <Container as="section" class="border-t border-border py-16 sm:py-20">
     <SectionHeading
       eyebrow="01 / ARTICLES"
-      title="最近的文章"
-      description="关于模型、实验与写作的持续记录。"
+      title="从基础开始阅读"
+      description="先理解 Transformer，再逐步读到推理加速。"
       actionHref="/blog/"
       actionLabel="全部文章"
     />
     <div class="rounded-xl border border-border bg-surface px-4 sm:px-6">
-      {recentPosts.map((post) => <PostCard post={post} />)}
+      {learningPosts.map((post) => <PostCard post={post} />)}
     </div>
   </Container>
 
